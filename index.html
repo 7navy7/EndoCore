@@ -1599,13 +1599,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         <span id="headerSlideName" class="text-xs font-semibold text-slate-100 max-w-[200px] truncate">Cover</span>
       </div>
 
-      <!-- Discreet 4:00 Manual Stopwatch (Click Start/Pause, Double-Click or Button to Reset) -->
+      <!-- Discreet 3:20 Post-Film Stopwatch (4:00 total incl. 40s film) -->
       <div class="flex items-center rounded-lg bg-slate-950/80 border border-purple-500/30 overflow-hidden">
-        <button id="stopwatchBtn" onclick="toggleStopwatch()" ondblclick="resetStopwatch()" class="px-2.5 py-1 flex items-center gap-1.5 font-mono-tech text-xs font-bold text-emerald-300 hover:bg-purple-900/40 transition" title="Click to Start/Pause · Double-Click to Reset 4:00 Timer">
+        <button id="stopwatchBtn" onclick="toggleStopwatch()" ondblclick="resetStopwatch()" class="px-2.5 py-1 flex items-center gap-1.5 font-mono-tech text-xs font-bold text-emerald-300 hover:bg-purple-900/40 transition" title="Click to Start/Pause · Double-Click to Reset 3:20 Deck Timer (4:00 total incl. 40s film)">
           <i id="stopwatchIcon" data-lucide="timer" class="w-3.5 h-3.5"></i>
-          <span id="stopwatchDisplay">04:00</span>
+          <span id="stopwatchDisplay">03:20</span>
         </button>
-        <button onclick="resetStopwatch()" class="px-1.5 py-1 border-l border-purple-500/25 text-slate-400 hover:text-white hover:bg-purple-900/40 transition" title="Reset 4:00 Timer">
+        <button onclick="resetStopwatch()" class="px-1.5 py-1 border-l border-purple-500/25 text-slate-400 hover:text-white hover:bg-purple-900/40 transition" title="Reset 3:20 Deck Timer (4:00 total incl. 40s film)">
           <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
         </button>
       </div>
@@ -1613,16 +1613,16 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
     <!-- Right Controls -->
     <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-      <!-- 6.5s Title Beat Toggle -->
-      <button id="titleBeatToggleBtn" onclick="toggleTitleBeatMode()" class="px-2.5 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900/80 border border-cyan-400/50 text-cyan-200 text-xs font-bold flex items-center gap-1.5 transition" title="Toggle the 2.3-second title hold before slide cards reveal">
-        <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-300"></i>
-        <span id="titleBeatToggleText" class="hidden sm:inline">Title Hold: 2.3s</span>
+      <!-- Instant Reveal Mode (Always Instant) -->
+      <button id="titleBeatToggleBtn" onclick="toggleTitleBeatMode()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-purple-900/60 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center gap-1.5 transition" title="Instant slide reveal (Title Hold disabled)">
+        <i data-lucide="zap" class="w-3.5 h-3.5 text-cyan-300"></i>
+        <span id="titleBeatToggleText" class="hidden sm:inline">Instant</span>
       </button>
 
-      <!-- Per-slide pace, budgeted from the 4-minute script -->
-      <div id="paceBadge" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-slate-500/40 font-mono-tech text-xs font-bold text-slate-300" title="Time on this slide vs its budget in the 4-minute script">
+      <!-- Per-slide pace, budgeted from the 4-minute script (40s film + 3:20 deck) -->
+      <div id="paceBadge" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-slate-500/40 font-mono-tech text-xs font-bold text-slate-300" title="Time on this slide vs its budget in the 4-minute script (40s film + 3:20 deck)">
         <i data-lucide="gauge" class="w-3.5 h-3.5 text-slate-400"></i>
-        <span id="paceText">0:00 / 0:06</span>
+        <span id="paceText">0:00 / 0:24</span>
       </div>
 
       <!-- Live Simulator Modal Button -->
@@ -1958,7 +1958,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       </div>
     </section>
 
-    <section class="slide-content justify-center" data-slide="7">
+    <!-- ==================== LIVE SIMULATOR SLIDE (AUTO-LAUNCH) ==================== -->
+    <section class="slide-content" data-slide="7"></section>
+
+    <section class="slide-content justify-center" data-slide="8">
       <div class="w-full max-w-6xl mx-auto mt-24 sm:mt-28 space-y-4">
         <div class="glass-purple rounded-2xl overflow-hidden border-purple-400/45">
           <table class="w-full text-left border-collapse">
@@ -2007,7 +2010,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       </div>
     </section>
 
-    <section class="slide-content justify-center" data-slide="8">
+    <section class="slide-content justify-center" data-slide="9">
       <div class="w-full max-w-6xl mx-auto space-y-8">
 
         <div class="text-center">
@@ -2042,7 +2045,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       </div>
     </section>
 
-    <section class="slide-content justify-end" data-slide="9">
+    <section class="slide-content justify-end" data-slide="10">
       <div class="w-full max-w-7xl mx-auto space-y-4">
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2095,7 +2098,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       </div>
     </section>
 
-    <section class="slide-content justify-center" data-slide="10">
+    <section class="slide-content justify-center" data-slide="11">
       <div class="w-full max-w-7xl mx-auto space-y-8">
 
         <div class="text-center">
@@ -2139,7 +2142,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       </div>
     </section>
 
-    <section class="slide-content justify-center" data-slide="11">
+    <section class="slide-content justify-center" data-slide="12">
       <div class="w-full max-w-6xl mx-auto px-4 space-y-10">
 
         <div class="text-center space-y-3 rounded-3xl px-8 py-8" style="background:rgba(10,4,20,.62);backdrop-filter:blur(6px);border:1px solid rgba(168,85,247,.25)">
@@ -2713,6 +2716,16 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         mode: "validation_pillars",
         showFloor: false,
         orbit: false
+      },
+      {
+        name: "Live Simulator",
+        title: "LIVE SIMULATOR",
+        subtitle: "TinyML Digital Twin — 28s Autoimmune Attack",
+        camPos: [0, 6.2, 33.0],
+        target: [0.5, 1.4, 0.2],
+        mode: "live_simulator",
+        showFloor: true,
+        orbit: true
       },
       {
         name: "Innovation & Differentiation",
@@ -4001,7 +4014,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     // 14. MANUAL NAVIGATION + 6.5-SECOND TITLE BEAT + PRESENTER STOPWATCH
     // =========================================================================
     let currentSlide = 0;
-    let titleBeatEnabled = true;
+    let titleBeatEnabled = false;
     let cardsRevealed = false;
     let titleBeatTimer = null;
     let titleBeatStartTime = 0;
@@ -4059,17 +4072,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       chipScale: 1.0
     };
 
-    // Presenter 4:00 Manual Stopwatch
-    let stopwatchSec = 240;
+    // Presenter 4:00 Stopwatch (40s Opening Film + 200s / 3:20 Deck = 240s total)
+    const DECK_BUDGET_SEC = 200;
+    let stopwatchSec = DECK_BUDGET_SEC;
     let stopwatchRunning = false;
     let stopwatchInterval = null;
 
-    // Seconds budgeted per slide, taken straight from the 4-minute script:
-    // spoken time plus a ~4-second cushion for the move and the breath.
-    // Cumulative: 0:06 0:14 0:40 1:00 1:16 1:42 2:16 2:28 2:48 3:06 3:20 3:38
-    // You leave the Problem slide at 0:40 and name EndoCore at 1:00.
-    // and you keep a 22-second buffer before the 4:00 wall.
-    const SLIDE_BUDGET = [6, 8, 26, 20, 16, 26, 34, 12, 20, 18, 14, 18];
+    // Seconds budgeted per slide (40s opening film + 200s deck = 240s / 4:00):
+    // Film: 0:40 | Problem: 24s (1:04) | Walls: 18s (1:22) | Solution: 15s (1:37)
+    // How It Works: 24s (2:01) | Validation: 13s (2:14) | Live Sim: 28s (2:42)
+    // Innovation: 12s (2:54) | Feasibility: 18s (3:12) | Economics: 17s (3:29)
+    // Roadmap: 14s (3:43) | The Ask: 17s (4:00)
+    const SLIDE_BUDGET = [0, 0, 24, 18, 15, 24, 13, 28, 12, 18, 17, 14, 17];
     let slideEnterAt = null;
 
     function renderPace() {
@@ -4104,17 +4118,27 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
     }
 
-    // Starts the 4:00 clock and advances to the first content slide in one action,
-    // so the time you see is the time the judges are counting.
+    // Starts the remaining 3:20 deck clock (4:00 minus 40s film) and jumps straight to Slide 02 (The Problem)
+    function enterDeckFromFilm() {
+      clearInterval(stopwatchInterval);
+      stopwatchRunning = false;
+      stopwatchSec = DECK_BUDGET_SEC;
+      renderStopwatch();
+      toggleStopwatch();
+      goToSlide(2);
+    }
+    window.enterDeckFromFilm = enterDeckFromFilm;
+
+    // Starts the deck clock and advances to the Problem slide in one action
     function beginPresentation() {
       if (!stopwatchRunning) toggleStopwatch();
-      nextSlide();
+      goToSlide(2);
     }
 
     function toggleStopwatch() {
       stopwatchRunning = !stopwatchRunning;
       if (stopwatchRunning) {
-        if (stopwatchSec <= 0) stopwatchSec = 240;
+        if (stopwatchSec <= 0) stopwatchSec = DECK_BUDGET_SEC;
         stopwatchInterval = setInterval(() => {
           if (stopwatchSec > 0) {
             stopwatchSec--;
@@ -4132,7 +4156,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     function resetStopwatch() {
       clearInterval(stopwatchInterval);
       stopwatchRunning = false;
-      stopwatchSec = 240;
+      stopwatchSec = DECK_BUDGET_SEC;
+      slideEnterAt = performance.now();
       renderStopwatch();
     }
 
@@ -4231,6 +4256,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         case 'validation_pillars':
           target3D.valPillars = false;
           break;
+        case 'live_simulator':
+          target3D.bioVisible = true;
+          target3D.chipVisible = true;
+          target3D.chipPosY = 6.0;
+          target3D.shieldOpacity = 0.04;
+          break;
         case 'innovation_prism':
           target3D.innovPrism = true;
           break;
@@ -4298,41 +4329,37 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
 
     function toggleTitleBeatMode() {
-      titleBeatEnabled = !titleBeatEnabled;
+      titleBeatEnabled = false;
       const btn = document.getElementById('titleBeatToggleBtn');
       const txt = document.getElementById('titleBeatToggleText');
-      if (titleBeatEnabled) {
-        txt.textContent = 'Title Hold: 2.3s';
-        btn.className = 'px-2.5 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900/80 border border-cyan-400/50 text-cyan-200 text-xs font-bold flex items-center gap-1.5 transition';
-      } else {
-        txt.textContent = 'Instant';
-        btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-purple-900/60 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center gap-1.5 transition';
-        if (!cardsRevealed) revealCurrentSlideNow();
-      }
+      if (txt) txt.textContent = 'Instant';
+      if (btn) btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-purple-900/60 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center gap-1.5 transition';
+      if (!cardsRevealed && (!SLIDES[currentSlide] || SLIDES[currentSlide].mode !== 'live_simulator')) revealCurrentSlideNow();
     }
 
     function goToSlide(idx) {
-  if (Number(idx) === 1) idx = (window.__ecLastSlide > 1) ? 0 : 2; window.__ecLastSlide = Number(idx); // EC-SKIP-SLIDE2
-
-
+      if (Number(idx) === 1) idx = (window.__ecLastSlide > 1) ? 0 : 2;
+      window.__ecLastSlide = Number(idx); // EC-SKIP-SLIDE2
 
       if (idx < 0 || idx >= SLIDES.length) return;
-      if (simulatorOpen) closeSimulatorModal();
+      if (simulatorOpen) closeSimulatorModal(false);
       cancelTitleBeat();
 
       currentSlide = idx;
       slideEnterAt = performance.now();   // restart this slide's pace clock
+      renderPace();
       slide6Assembled = false;
       const slide = SLIDES[idx];
-      const useTitleBeat = titleBeatEnabled && idx !== 0; // Cover (Slide 01) reveals immediately!
 
       // Hide all slide content cards first
       document.querySelectorAll('.slide-content').forEach(sec => sec.classList.remove('revealed'));
       cardsRevealed = false;
 
-      // Update Header & Footer Indicators
-      const numStr = String(idx + 1).padStart(2, '0');
-      document.getElementById('headerSlideNum').textContent = `${numStr} / 12`;
+      // Update Header & Footer Indicators (12 visible slides since index 1 is skipped)
+      const visibleTotal = SLIDES.length - 1;
+      const visibleNum = idx > 1 ? idx : 1;
+      const numStr = String(visibleNum).padStart(2, '0');
+      document.getElementById('headerSlideNum').textContent = `${numStr} / ${visibleTotal}`;
       document.getElementById('headerSlideName').textContent = slide.name;
       const srcEl = document.getElementById('slideSource');
       if (srcEl) {
@@ -4343,18 +4370,19 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       document.getElementById('nextSlideBtn').disabled = idx === SLIDES.length - 1;
       dotsWrap.querySelectorAll('.chapter-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 
-      // Update Depth Title & Subtitle with smooth transition
+      // Update Depth Title & Subtitle instantly (no title hold)
       const titleEl = document.getElementById('depth-title');
       const subEl = document.getElementById('depth-subtitle-pill');
-      titleEl.className = 'exiting';
-      subEl.className = '';
-      setTimeout(() => {
-        titleEl.textContent = slide.title;
-        subEl.textContent = slide.subtitle;
-        void titleEl.offsetWidth;
-        titleEl.className = useTitleBeat ? 'beat-prominent' : 'content-softened';
-        subEl.className = useTitleBeat ? 'visible' : 'softened';
-      }, 220);
+      titleEl.textContent = slide.title;
+      subEl.textContent = slide.subtitle;
+      titleEl.className = 'content-softened';
+      subEl.className = 'softened';
+
+      // Auto-launch Live Simulator + 28s Autoimmune Attack when entering the Live Simulator slide
+      if (slide.mode === 'live_simulator') {
+        openSimulatorModal(true);
+        return;
+      }
 
       // Apply 3D scene mode & fly camera
       applySlide3DMode(slide);
@@ -4362,17 +4390,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       webglHost.classList.toggle('orbit-active', !!slide.orbit);
       flyCamera(slide.camPos, slide.target, 1200);
 
-      // Start the 2.3-second title hold on Slides 02-12 OR Immediate Reveal on Cover / Instant Mode
-      if (useTitleBeat) {
-        titleBeatStartTime = performance.now();
-        document.getElementById('titleBeatBanner').classList.add('active');
-        document.getElementById('cardsToggleLabel').textContent = 'Show Cards';
-        titleBeatTimer = setTimeout(() => {
-          revealCurrentSlideNow();
-        }, TITLE_BEAT_MS);
-      } else {
-        setTimeout(() => revealCurrentSlideNow(), idx === 0 ? 120 : 280);
-      }
+      // Always reveal slide content immediately
+      revealCurrentSlideNow();
     }
 
     function nextSlide() {
@@ -4587,8 +4606,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
 
     let simReturnSlide = 0;
-    function openSimulatorModal() {
-      simReturnSlide = currentSlide;
+    function openSimulatorModal(autoAttack = false) {
+      const isSimSlide = SLIDES[currentSlide] && SLIDES[currentSlide].mode === 'live_simulator';
+      simReturnSlide = isSimSlide ? Math.max(0, currentSlide - 1) : currentSlide;
       const lbl = document.getElementById('simReturnLabel');
       if (lbl) lbl.textContent = 'Back to ' + (SLIDES[simReturnSlide] || {}).name;
       cancelTitleBeat();
@@ -4599,17 +4619,27 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       document.getElementById('layer-depth-typo').classList.add('opacity-20');
       controls.enabled = true;
       webglHost.classList.add('orbit-active');
-      evaluateSimTinyML();
+      if (autoAttack) {
+        resetSim();
+        startSim28sAttack();
+      } else {
+        evaluateSimTinyML();
+      }
       flyCamera([0, 6.2, 33.0], [0.5, 1.4, 0.2], 950);
     }
 
-    function closeSimulatorModal() {
+    function closeSimulatorModal(restoreSlide = true) {
       if (!simulatorOpen) return;
       simulatorOpen = false;
       sim.running = false;
       document.getElementById('simulatorModal').classList.add('hidden');
       document.getElementById('layer-slides').classList.remove('hidden');
       document.getElementById('layer-depth-typo').classList.remove('opacity-20');
+      if (!restoreSlide) return;
+      if (SLIDES[currentSlide] && SLIDES[currentSlide].mode === 'live_simulator') {
+        goToSlide(simReturnSlide);
+        return;
+      }
       const slide = SLIDES[currentSlide];
       applySlide3DMode(slide);
       controls.enabled = !!slide.orbit;
@@ -4666,7 +4696,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         return;
       }
 
-      if (simulatorOpen || document.getElementById('appendixModal').classList.contains('flex')) return;
+      if (document.getElementById('appendixModal').classList.contains('flex')) return;
+      if (simulatorOpen) {
+        if (SLIDES[currentSlide] && SLIDES[currentSlide].mode === 'live_simulator') {
+          if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        }
+        return;
+      }
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -5084,6 +5121,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     stage.classList.add('ec-hidden');
     frame.src = 'about:blank';
     reopenBtn.style.display = 'inline-block';
+    if (typeof window.enterDeckFromFilm === 'function') {
+      window.enterDeckFromFilm();
+    }
     window.focus();
   }
   function openFilm() {
@@ -5298,19 +5338,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
     }
 
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      const txt = node.nodeValue;
-      if (txt && /\b\d{1,2}\s*\/\s*12\b/.test(txt)) {
-        node.nodeValue = txt.replace(/\b(\d{1,2})(\s*\/\s*)12\b/, (_, num, sep) => {
-          const n = parseInt(num, 10);
-          const adjusted = n > 2 ? n - 1 : 1;
-          const padded = num.length === 2 ? String(adjusted).padStart(2, '0') : String(adjusted);
-          return padded + sep + '11';
-        });
-      }
-    }
+    // Slide counter (01 / 12 .. 12 / 12) is handled natively by goToSlide()
   }
 
   if (document.readyState === 'loading') {
@@ -5323,6 +5351,16 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 })();
 </script>
 <!-- EC-SKIP-SLIDE2-END -->
+
+
+<!-- EC-INSTANT-TITLE-START -->
+<style id="ec-instant-title-style">
+  #titleBeatBanner,
+  #titleBeatProgressLine {
+    display: none !important;
+  }
+</style>
+<!-- EC-INSTANT-TITLE-END -->
 
 </body>
 </html>
