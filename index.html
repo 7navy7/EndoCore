@@ -4312,6 +4312,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
 
     function goToSlide(idx) {
+  if (Number(idx) === 1) idx = (window.__ecLastSlide > 1) ? 0 : 2; window.__ecLastSlide = Number(idx); // EC-SKIP-SLIDE2
+
+
       if (idx < 0 || idx >= SLIDES.length) return;
       if (simulatorOpen) closeSimulatorModal();
       cancelTitleBeat();
@@ -5267,6 +5270,59 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 })();
 </script>
 <!-- EC-VAL-CENTER-END -->
+
+
+
+
+<!-- EC-SKIP-SLIDE2-START -->
+<style id="ec-skip-slide2-style">
+  .ec-dots-hide2 > :nth-child(2) { display: none !important; }
+  #slide-2, [data-slide="2"], [data-slide-index="1"] { display: none !important; }
+</style>
+<script id="ec-skip-slide2-script">
+(function () {
+  function syncSlide2Removal() {
+    // 1. Hide 2nd dot in bottom bar (11 dots total)
+    const btns = Array.from(document.querySelectorAll('button'));
+    const prevBtn = btns.find(b => /prev/i.test(b.textContent || ''));
+    const nextBtn = btns.find(b => /next/i.test(b.textContent || ''));
+    if (prevBtn && nextBtn) {
+      let bar = prevBtn.parentElement;
+      while (bar && !bar.contains(nextBtn)) bar = bar.parentElement;
+      if (bar) {
+        const dotBox = Array.from(bar.querySelectorAll('div, nav, ul')).find(el =>
+          el.children.length >= 8 && el.children.length <= 20 && !el.contains(prevBtn) && !el.contains(nextBtn)
+        );
+        if (dotBox) dotBox.classList.add('ec-dots-hide2');
+      }
+    }
+
+    // 2. Renumber top counter from "XX / 12" to "XX / 11" cleanly
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const txt = node.nodeValue;
+      if (txt && /\b\d{1,2}\s*\/\s*12\b/.test(txt)) {
+        node.nodeValue = txt.replace(/\b(\d{1,2})(\s*\/\s*)12\b/, (_, num, sep) => {
+          const n = parseInt(num, 10);
+          const adjusted = n > 2 ? n - 1 : 1;
+          const padded = num.length === 2 ? String(adjusted).padStart(2, '0') : String(adjusted);
+          return padded + sep + '11';
+        });
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncSlide2Removal);
+  } else {
+    syncSlide2Removal();
+  }
+  const obs = new MutationObserver(() => syncSlide2Removal());
+  obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+})();
+</script>
+<!-- EC-SKIP-SLIDE2-END -->
 
 </body>
 </html>
