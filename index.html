@@ -5097,155 +5097,176 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 </script>
 
 
-<!-- EC-VAL-PLAY-START -->
-<style id="ec-val-play-style">
-  #ec-val-play-wrap {
-    position: absolute;
-    top: 52%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 45;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    pointer-events: none;
+
+
+<!-- EC-VAL-CENTER-START -->
+<style id="ec-val-center-style">
+  .ec-val-slide {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding-top: 115px !important;
+    padding-bottom: 64px !important;
   }
-  #ec-val-play-wrap::before {
-    content: "";
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    border-radius: 9999px;
-    background: radial-gradient(circle, rgba(10, 6, 26, 0.72) 0%, rgba(10, 6, 26, 0.25) 55%, rgba(10, 6, 26, 0) 75%);
-    pointer-events: none;
-    z-index: -1;
+  .ec-val-mid {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    width: 100% !important;
   }
-  #ec-val-play-btn {
-    pointer-events: auto;
-    position: relative;
-    width: 88px;
-    height: 88px;
-    border-radius: 9999px;
-    border: 2px solid rgba(34, 211, 238, 0.85);
-    background: radial-gradient(circle at 35% 30%, rgba(34, 211, 238, 0.32), rgba(88, 28, 135, 0.78));
-    box-shadow: 0 0 36px rgba(34, 211, 238, 0.45), inset 0 0 18px rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(12px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  .ec-val-stack {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    margin: auto !important;
+    width: min(92vw, 1180px) !important;
+    max-width: 1180px !important;
+    gap: 1.35rem !important;
   }
-  #ec-val-play-btn::after {
-    content: "";
-    position: absolute;
-    inset: -10px;
-    border-radius: 9999px;
-    border: 1.5px solid rgba(34, 211, 238, 0.45);
-    animation: ecPlayPulse 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
-    pointer-events: none;
+  .ec-val-hero {
+    font-size: clamp(3.4rem, 6.2vw, 5.4rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.01em !important;
   }
-  #ec-val-play-btn:hover {
-    transform: scale(1.08);
-    border-color: #67e8f9;
-    box-shadow: 0 0 50px rgba(34, 211, 238, 0.75), inset 0 0 22px rgba(255, 255, 255, 0.28);
+  .ec-val-sub {
+    font-size: clamp(1.55rem, 2.7vw, 2.45rem) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0.75rem !important;
   }
-  #ec-val-play-btn:active {
-    transform: scale(0.97);
+  .ec-val-card {
+    padding: 1.75rem 1.5rem !important;
+    border-radius: 1.15rem !important;
   }
-  #ec-val-play-btn svg {
-    width: 34px;
-    height: 34px;
-    fill: #ffffff;
-    margin-left: 5px;
-    filter: drop-shadow(0 0 8px rgba(103, 232, 249, 0.8));
+  .ec-val-card-title {
+    font-size: clamp(1.65rem, 2.3vw, 2.25rem) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.45rem !important;
   }
-  #ec-val-play-label {
-    pointer-events: auto;
-    cursor: pointer;
-    padding: 6px 14px;
-    border-radius: 9999px;
-    border: 1px solid rgba(34, 211, 238, 0.45);
-    background: rgba(10, 8, 24, 0.82);
-    color: #cffafe;
-    font: 700 11px/1 system-ui, -apple-system, sans-serif;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  .ec-val-card p,
+  .ec-val-card span:not(.ec-val-card-title) {
+    font-size: clamp(0.95rem, 1.15vw, 1.12rem) !important;
+    line-height: 1.45 !important;
   }
-  @keyframes ecPlayPulse {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1.38); opacity: 0; }
+  .ec-val-rev {
+    padding: 1.3rem 2.2rem !important;
+    border-radius: 1.1rem !important;
+    max-width: 860px !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .ec-val-rev-names {
+    font-size: clamp(1.1rem, 1.45vw, 1.38rem) !important;
   }
 </style>
-<script id="ec-val-play-script">
+<script id="ec-val-center-script">
 (function () {
-  function initValPlayButton() {
-    let slides = Array.from(document.querySelectorAll('.slide, [data-slide]'));
-    if (!slides.length) slides = Array.from(document.querySelectorAll('section'));
-    slides = slides.filter(el => !slides.some(other => other !== el && el.contains(other)));
+  function clearOldClasses() {
+    document.querySelectorAll('.ec-val-slide').forEach(el => {
+      if (!/it works\./i.test(el.textContent || '')) el.classList.remove('ec-val-slide');
+    });
+    document.querySelectorAll('.ec-val-mid').forEach(el => {
+      if (!/it works\./i.test(el.textContent || '')) el.classList.remove('ec-val-mid');
+    });
+  }
 
-    const valSlide =
-      slides.find(el => {
-        const t = (el.textContent || '').toLowerCase();
-        return (t.includes('validation') && (t.includes('94.4') || t.includes('simulator') || t.includes('performance')))
-            || (t.includes('94.4%') && t.includes('0.985'));
-      }) ||
-      slides.find(el => (el.textContent || '').toLowerCase().includes('validation'));
-
-    if (!valSlide || document.getElementById('ec-val-play-wrap')) return;
-    if (getComputedStyle(valSlide).position === 'static') {
-      valSlide.style.position = 'relative';
-    }
-
-    const inSlideTrigger = Array.from(valSlide.querySelectorAll('button, a')).find(el =>
-      /simulator|live 3d|launch|run sim/i.test(el.textContent || '')
+  function applyValidationLayout() {
+    clearOldClasses();
+    const nodes = Array.from(document.querySelectorAll('h1, h2, h3, h4, div, p, span'));
+    const hero = nodes.find(el =>
+      el.children.length === 0 && /^\s*it works\.?\s*$/i.test(el.textContent || '')
     );
+    const rev = nodes.find(el =>
+      /reviewed by practising physicians/i.test(el.textContent || '') && el.children.length <= 2
+    );
+    if (!hero || !rev) return;
 
-    if (inSlideTrigger) {
-      inSlideTrigger.style.opacity = '0';
-      inSlideTrigger.style.pointerEvents = 'none';
+    // Lowest common ancestor holding IT WORKS + 3 cards + Physician card
+    let stack = hero;
+    while (stack && !stack.contains(rev)) stack = stack.parentElement;
+    if (!stack || stack === document.body) return;
+
+    // Find this slide's own container (never grabbing a multi-slide parent)
+    let slideWrap = stack.parentElement;
+    while (
+      slideWrap &&
+      slideWrap !== document.body &&
+      !/roadmap|business model|three walls/i.test(slideWrap.textContent || '')
+    ) {
+      const pos = getComputedStyle(slideWrap).position;
+      if (
+        slideWrap.classList.contains('slide') ||
+        slideWrap.hasAttribute('data-slide') ||
+        /slide/i.test(slideWrap.id || '') ||
+        pos === 'fixed' ||
+        pos === 'absolute'
+      ) {
+        break;
+      }
+      slideWrap = slideWrap.parentElement;
     }
 
-    const wrap = document.createElement('div');
-    wrap.id = 'ec-val-play-wrap';
-    wrap.innerHTML =
-      '<button id="ec-val-play-btn" type="button" aria-label="Launch 3D Simulator">' +
-      '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' +
-      '</button>' +
-      '<span id="ec-val-play-label">Launch 3D Simulator</span>';
-
-    function launchSimulator(e) {
-      e.stopPropagation();
-      if (inSlideTrigger) {
-        inSlideTrigger.click();
-        return;
+    if (
+      slideWrap &&
+      slideWrap !== document.body &&
+      !/roadmap|business model|three walls/i.test(slideWrap.textContent || '')
+    ) {
+      slideWrap.classList.add('ec-val-slide');
+      let mid = stack.parentElement;
+      while (mid && mid !== slideWrap) {
+        mid.classList.add('ec-val-mid');
+        mid = mid.parentElement;
       }
-      const headerTrigger = Array.from(document.querySelectorAll('button, a')).find(el =>
-        /live simulator|3d simulator|simulator/i.test(el.textContent || '') && !el.closest('#ec-val-play-wrap')
+    }
+
+    stack.classList.add('ec-val-stack');
+    hero.classList.add('ec-val-hero');
+
+    const sub = Array.from(stack.querySelectorAll('*')).find(el =>
+      /and we can show you/i.test(el.textContent || '') && el.children.length <= 2
+    );
+    if (sub) sub.classList.add('ec-val-sub');
+
+    ['28 seconds', 'milliseconds', 'synthetic'].forEach(txt => {
+      const tEl = Array.from(stack.querySelectorAll('*')).find(el =>
+        el.children.length === 0 && (el.textContent || '').trim().toLowerCase() === txt
       );
-      if (headerTrigger) {
-        headerTrigger.click();
-      } else {
-        window.open('https://7navy7.github.io/EndoCore-MVP/', '_blank', 'noopener');
+      if (tEl) {
+        tEl.classList.add('ec-val-card-title');
+        if (tEl.parentElement) tEl.parentElement.classList.add('ec-val-card');
       }
-    }
+    });
 
-    wrap.querySelector('#ec-val-play-btn').addEventListener('click', launchSimulator);
-    wrap.querySelector('#ec-val-play-label').addEventListener('click', launchSimulator);
-    valSlide.appendChild(wrap);
+    let revCard = rev;
+    while (revCard && revCard.parentElement !== stack) revCard = revCard.parentElement;
+    if (revCard) {
+      revCard.classList.add('ec-val-rev');
+      const names = Array.from(revCard.querySelectorAll('*')).find(el =>
+        /dr\.\s*hanan/i.test(el.textContent || '') && el.children.length === 0
+      );
+      if (names) names.classList.add('ec-val-rev-names');
+    }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initValPlayButton);
+    document.addEventListener('DOMContentLoaded', applyValidationLayout);
   } else {
-    initValPlayButton();
+    applyValidationLayout();
   }
+  const obs = new MutationObserver(() => applyValidationLayout());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
-<!-- EC-VAL-PLAY-END -->
+<!-- EC-VAL-CENTER-END -->
 
 </body>
 </html>
