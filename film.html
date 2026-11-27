@@ -1,0 +1,3885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3:14 AM — Animated Short Film</title>
+  <style>
+    /* ==========================================================================
+       THEATER THEME & RESET
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-obsidian: #07080c;
+      --surface-glass: rgba(12, 14, 21, 0.78);
+      --border-subtle: rgba(255, 255, 255, 0.12);
+      --text-primary: #f2f5fa;
+      --text-muted: rgba(232, 238, 250, 0.62);
+      --accent-amber: #eab67a;
+      --accent-blue: #7aa7e8;
+      --accent-crimson: #e34a59;
+      --font-serif: "Georgia", "Palatino Linotype", "Book Antiqua", Times, serif;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-obsidian);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Full-screen obsidian cinema stage */
+    #theater {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 44%, #10131d 0%, #07080c 72%);
+      overflow: hidden;
+    }
+
+    /* Responsive 16:9 Cinematic Viewport */
+    #frame-container {
+      position: relative;
+      width: min(96vw, calc(84vh * 16 / 9), 1360px);
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow:
+        0 28px 90px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      #frame-container {
+        width: 100vw;
+        border-radius: 0;
+      }
+    }
+
+    #film-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    /* ==========================================================================
+       VERBATIM SUBTITLE OVERLAY (Positioned inside bottom letterbox safe area)
+       ========================================================================== */
+    #caption-layer {
+      position: absolute;
+      left: 50%;
+      bottom: 2.6%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 860px;
+      text-align: center;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    #caption-text {
+      display: inline-block;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(12px, 1.75vw, 22px);
+      line-height: 1.38;
+      letter-spacing: 0.015em;
+      color: rgba(246, 249, 255, 0.96);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.95);
+      padding: 5px 16px;
+      border-radius: 8px;
+      background: rgba(6, 8, 13, 0.56);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      transform: translateY(5px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    #caption-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ==========================================================================
+       START SCREEN & END "WATCH AGAIN" OVERLAYS
+       ========================================================================== */
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 45%, rgba(14, 18, 30, 0.72) 0%, rgba(5, 6, 10, 0.92) 82%);
+      transition: opacity 0.65s ease, visibility 0.65s ease;
+      cursor: default;
+    }
+
+    .overlay-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* End overlay sits gently below the stark "None." canvas text without dimming it */
+    #end-overlay {
+      background: transparent;
+      justify-content: flex-end;
+      padding-bottom: 12%;
+      pointer-events: none;
+    }
+
+    #end-overlay .cta-btn {
+      pointer-events: auto;
+    }
+
+    .led-pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #72b6ff;
+      box-shadow: 0 0 16px 4px rgba(114, 182, 255, 0.58);
+      margin-bottom: 18px;
+      animation: pulseLed 2.6s ease-in-out infinite;
+    }
+
+    @keyframes pulseLed {
+      0%, 100% { opacity: 0.3; transform: scale(0.88); }
+      50% { opacity: 1; transform: scale(1.16); }
+    }
+
+    .film-title {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(34px, 5.4vw, 68px);
+      letter-spacing: 0.16em;
+      color: #f5f7fc;
+      margin-bottom: 8px;
+      text-shadow: 0 4px 28px rgba(122, 167, 232, 0.22);
+    }
+
+    .film-subtitle {
+      font-size: clamp(10px, 1.25vw, 13px);
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font-size: clamp(12px, 1.3vw, 14px);
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.22s ease, transform 0.18s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .cta-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.48);
+      box-shadow: 0 0 26px rgba(122, 167, 232, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .cta-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .audio-note {
+      margin-top: 15px;
+      font-size: 11px;
+      letter-spacing: 0.09em;
+      color: rgba(255, 255, 255, 0.42);
+    }
+
+    /* ==========================================================================
+       AUTO-HIDING BOTTOM THEATER CONTROLS BAR
+       ========================================================================== */
+    #controls-wrapper {
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(94vw, 960px);
+      z-index: 40;
+      opacity: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    #controls-wrapper.idle-hidden {
+      opacity: 0;
+      transform: translateX(-50%) translateY(10px);
+      pointer-events: none;
+    }
+
+    .controls-bar {
+      background: var(--surface-glass);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 14px 11px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Draggable timeline scrubber with scene markers */
+    .scrubber-area {
+      position: relative;
+      width: 100%;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .scrubber-track {
+      position: relative;
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      overflow: visible;
+    }
+
+    .scrubber-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #eab67a 0%, #e34a59 46%, #7aa7e8 84%, #dce6f7 100%);
+      pointer-events: none;
+    }
+
+    .scrubber-thumb {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+      transform: translate(-50%, -50%) scale(0.92);
+      transition: transform 0.15s ease;
+      pointer-events: none;
+    }
+
+    .scrubber-area:hover .scrubber-thumb,
+    .scrubber-area.dragging .scrubber-thumb {
+      transform: translate(-50%, -50%) scale(1.24);
+    }
+
+    .scene-marker {
+      position: absolute;
+      top: -2px;
+      width: 2px;
+      height: 9px;
+      background: rgba(255, 255, 255, 0.42);
+      border-radius: 2px;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    #scrubber-tooltip {
+      position: absolute;
+      bottom: 24px;
+      transform: translateX(-50%);
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(10, 12, 18, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #f0f4fc;
+      font-size: 11px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.14s ease;
+    }
+
+    #scrubber-tooltip.show {
+      opacity: 1;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 36px;
+      height: 36px;
+      padding: 0 11px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.13);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .ctrl-btn.active {
+      background: rgba(122, 167, 232, 0.2);
+      border-color: rgba(122, 167, 232, 0.44);
+      color: #d4e6ff;
+    }
+
+    .ctrl-btn svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .time-readout {
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .scene-label {
+      font-size: 12px;
+      color: rgba(235, 240, 250, 0.74);
+      letter-spacing: 0.04em;
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.14);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 245px;
+    }
+
+    @media (max-width: 600px) {
+      .scene-label { display: none; }
+      .btn-label { display: none; }
+      .ctrl-btn { padding: 0 9px; height: 38px; min-width: 38px; }
+      .controls-bar { padding: 8px 10px 9px; }
+    }
+  </style>
+</head>
+<body>
+  <main id="theater">
+    <!-- Responsive 16:9 Cinematic Viewport -->
+    <div id="frame-container">
+      <canvas id="film-canvas" aria-label="3:14 AM Animated Short Film"></canvas>
+
+      <!-- Verbatim Script Subtitles (Scenes 1–6) -->
+      <div id="caption-layer" aria-live="polite">
+        <span id="caption-text"></span>
+      </div>
+
+      <!-- Clean Start Screen Overlay (Initializes Web Audio on click) -->
+      <section id="title-overlay" class="overlay-screen">
+        <div class="led-pulse-dot" aria-hidden="true"></div>
+        <h1 class="film-title">3:14 AM</h1>
+        <p class="film-subtitle">An Animated Short Film</p>
+        <button id="btn-play-start" class="cta-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Play Film (0:40)
+        </button>
+        <p class="audio-note">Sound recommended &bull; Space to pause &bull; C captions &bull; M mute</p>
+      </section>
+
+      <!-- Unobtrusive End Replay Overlay appearing cleanly below "None." -->
+      <section id="end-overlay" class="overlay-screen hidden">
+        <button id="btn-watch-again" class="cta-btn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+          </svg>
+          Watch Again
+        </button>
+      </section>
+    </div>
+
+    <!-- Auto-Hiding Bottom Theater Control Bar -->
+    <div id="controls-wrapper" class="idle-hidden">
+      <div class="controls-bar">
+        <!-- Draggable Timeline Scrubber with Scene Markers -->
+        <div id="scrubber-area" class="scrubber-area" role="slider" aria-label="Film timeline" aria-valuemin="0" aria-valuemax="40" aria-valuenow="0">
+          <div id="scrubber-tooltip">0:00 — I. The 19-Year-Old Sister</div>
+          <div id="scrubber-track" class="scrubber-track">
+            <div id="scrubber-fill" class="scrubber-fill"></div>
+            <div id="scrubber-thumb" class="scrubber-thumb"></div>
+          </div>
+        </div>
+
+        <!-- Playback Buttons & Readouts -->
+        <div class="controls-row">
+          <div class="controls-group">
+            <button id="btn-play-pause" class="ctrl-btn" type="button" title="Play / Pause (Space)">
+              <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+            </button>
+
+            <button id="btn-restart" class="ctrl-btn" type="button" title="Restart (R)">
+              <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" /></svg>
+            </button>
+
+            <span id="time-readout" class="time-readout">0:00 / 0:40</span>
+            <span id="scene-label" class="scene-label">I. The 19-Year-Old Sister</span>
+          </div>
+
+          <div class="controls-group">
+            <button id="btn-captions" class="ctrl-btn active" type="button" title="Toggle Captions (C)">
+              <svg viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1z" /></svg>
+              <span class="btn-label">CC</span>
+            </button>
+
+            <button id="btn-mute" class="ctrl-btn" type="button" title="Mute / Unmute (M)">
+              <svg id="icon-vol-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
+              <svg id="icon-vol-off" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
+              <span class="btn-label">Audio</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      /* ========================================================================
+         1. FILM CONFIGURATION, SCENES & EXACT 40.0-SECOND VERBATIM SCRIPT
+         ======================================================================== */
+      const FILM_DURATION = 40.0;
+
+      // Full 16:9 logical frame with crisp 2.35:1 cinema letterbox band inside
+      const FRAME_W = 1440;
+      const FRAME_H = 810;
+      const LOGICAL_W = 1440;
+      const LOGICAL_H = 612;
+      const LETTERBOX_Y = (FRAME_H - LOGICAL_H) * 0.5; // 99px top & bottom bars
+
+      const SCENES = [
+        { id: 1, start: 0.0,  end: 10.5, label: "I. The 19-Year-Old Sister" },
+        { id: 2, start: 10.5, end: 15.0, label: "II. The 12-Year-Old Sister" },
+        { id: 3, start: 15.0, end: 17.8, label: "III. Pump Failure (3:14 AM)" },
+        { id: 4, start: 17.8, end: 21.0, label: "IV. Ketones & Emergency" },
+        { id: 5, start: 21.0, end: 23.8, label: "V. Three Days in Hospital" },
+        { id: 6, start: 23.8, end: 32.8, label: "VI. Coming Home & Sisters" },
+        { id: 7, start: 32.8, end: 40.0, label: "VII. Nine and a Half Million" }
+      ];
+
+      // Verbatim captions for Scenes 1–6 (Scene 7 closing lines render directly on canvas)
+      const CAPTIONS = [
+        { start: 0.3,  end: 2.2,  text: "Imagine a nineteen-year-old girl." },
+        { start: 2.3,  end: 5.2,  text: "Type 1 since she was nine. Ten years of injections and pumps." },
+        { start: 5.3,  end: 7.4,  text: "A needle under her skin every three days." },
+        { start: 7.5,  end: 9.6,  text: "Medical equipment everywhere she goes." },
+        { start: 10.6, end: 12.6, text: "In the same house, her twelve-year-old sister." },
+        { start: 12.7, end: 14.2, text: "Diagnosed at five." },
+        { start: 15.1, end: 17.6, text: "One night, the pump stopped working." },
+        { start: 17.9, end: 20.9, text: "She woke up in the emergency room, ketones flooding her body." },
+        { start: 21.1, end: 23.2, text: "Three days in hospital." },
+        { start: 24.0, end: 27.6, text: "When she came home, she said she did not want to live like this any more." },
+        { start: 27.7, end: 29.4, text: "She was twelve." }
+        // 29.4s – 32.8s intentionally has NO captions to hold the sister hug beat
+      ];
+
+      /* ========================================================================
+         2. MATH & EASING UTILITIES
+         ======================================================================== */
+      const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const invLerp = (a, b, v) => clamp((v - a) / (b - a), 0, 1);
+      const smoothstep = (t) => {
+        t = clamp(t, 0, 1);
+        return t * t * (3 - 2 * t);
+      };
+      const easeOutCubic = (t) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+      const easeInOutSine = (t) => -(Math.cos(Math.PI * clamp(t, 0, 1)) - 1) / 2;
+
+      function formatTime(sec) {
+        const s = Math.max(0, Math.floor(sec));
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        return `${m}:${String(r).padStart(2, "0")}`;
+      }
+
+      /* ========================================================================
+         3. PROCEDURAL WEB AUDIO API SCORE & SFX ENGINE (40.0s STRICT SYNC)
+         Synthesizes felt piano with soft low-pass filtering & convolution hall
+         reverb, atmospheric pad, tension sub-drone, clock ticks, medical triple-
+         beep occlusion alarm, muffled heartbeat, rain & ambulance siren wash,
+         ER ECG beeps, warm hug chord resolution, and total silence before "None."
+         ======================================================================== */
+      class FilmAudioEngine {
+        constructor() {
+          this.ctx = null;
+          this.masterGain = null;
+          this.reverbNode = null;
+          this.isMuted = false;
+          this.initialized = false;
+
+          // Continuous dynamic ambient nodes
+          this.droneOsc = null;
+          this.droneGain = null;
+          this.padNodes = [];
+          this.padGain = null;
+          this.rainNode = null;
+          this.rainGain = null;
+          this.sirenOsc = null;
+          this.sirenGain = null;
+          this.humOsc = null;
+          this.humGain = null;
+
+          // Cue scheduling tracker (prevents duplicates & enables clean seeking)
+          this.firedCues = new Set();
+          this.cues = this.buildCueSheet();
+        }
+
+        init() {
+          if (this.initialized) {
+            if (this.ctx && this.ctx.state === "suspended") {
+              this.ctx.resume().catch(() => {});
+            }
+            return;
+          }
+          try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = this.isMuted ? 0 : 0.86;
+            this.masterGain.connect(this.ctx.destination);
+
+            // Synthetic concert-hall impulse response for warm piano reverb
+            this.reverbNode = this.ctx.createConvolver();
+            this.reverbNode.buffer = this.createImpulseResponse(2.5, 2.3);
+            const reverbWet = this.ctx.createGain();
+            reverbWet.gain.value = 0.42;
+            this.reverbNode.connect(reverbWet);
+            reverbWet.connect(this.masterGain);
+
+            this.setupContinuousLayers();
+            this.initialized = true;
+          } catch (err) {
+            console.warn("Web Audio unavailable:", err);
+          }
+        }
+
+        createImpulseResponse(duration, decay) {
+          const rate = this.ctx.sampleRate;
+          const length = Math.floor(rate * duration);
+          const impulse = this.ctx.createBuffer(2, length, rate);
+          for (let ch = 0; ch < 2; ch++) {
+            const data = impulse.getChannelData(ch);
+            for (let i = 0; i < length; i++) {
+              const env = Math.pow(1 - i / length, decay);
+              data[i] = (Math.random() * 2 - 1) * env * 0.48;
+            }
+          }
+          return impulse;
+        }
+
+        setupContinuousLayers() {
+          const now = this.ctx.currentTime;
+
+          // 1. Sub-bass tension drone (Scenes 3–4)
+          this.droneOsc = this.ctx.createOscillator();
+          this.droneOsc.type = "sawtooth";
+          this.droneOsc.frequency.setValueAtTime(55, now);
+          const droneFilter = this.ctx.createBiquadFilter();
+          droneFilter.type = "lowpass";
+          droneFilter.frequency.setValueAtTime(135, now);
+          this.droneGain = this.ctx.createGain();
+          this.droneGain.gain.setValueAtTime(0.0001, now);
+          this.droneOsc.connect(droneFilter);
+          droneFilter.connect(this.droneGain);
+          this.droneGain.connect(this.masterGain);
+          this.droneOsc.start(now);
+
+          // 2. Warm atmospheric pad (opening tenderness, hospital & sister hug)
+          this.padGain = this.ctx.createGain();
+          this.padGain.gain.setValueAtTime(0.0001, now);
+          const padFilter = this.ctx.createBiquadFilter();
+          padFilter.type = "lowpass";
+          padFilter.frequency.setValueAtTime(540, now);
+          this.padGain.connect(padFilter);
+          padFilter.connect(this.reverbNode);
+          padFilter.connect(this.masterGain);
+
+          [130.81, 196.0, 246.94].forEach((freq) => {
+            const osc = this.ctx.createOscillator();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, now);
+            osc.connect(this.padGain);
+            osc.start(now);
+            this.padNodes.push(osc);
+          });
+
+          // 3. Filtered noise rain wash (Scene 4 ambulance)
+          const noiseBuf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
+          const d = noiseBuf.getChannelData(0);
+          for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+          this.rainNode = this.ctx.createBufferSource();
+          this.rainNode.buffer = noiseBuf;
+          this.rainNode.loop = true;
+          const rainFilter = this.ctx.createBiquadFilter();
+          rainFilter.type = "bandpass";
+          rainFilter.frequency.setValueAtTime(1150, now);
+          rainFilter.Q.value = 0.75;
+          this.rainGain = this.ctx.createGain();
+          this.rainGain.gain.setValueAtTime(0.0001, now);
+          this.rainNode.connect(rainFilter);
+          rainFilter.connect(this.rainGain);
+          this.rainGain.connect(this.masterGain);
+          this.rainNode.start(now);
+
+          // 4. Sweeping ambulance siren wash (Scene 4)
+          this.sirenOsc = this.ctx.createOscillator();
+          this.sirenOsc.type = "triangle";
+          this.sirenOsc.frequency.setValueAtTime(640, now);
+          const sirenFilter = this.ctx.createBiquadFilter();
+          sirenFilter.type = "lowpass";
+          sirenFilter.frequency.setValueAtTime(900, now);
+          this.sirenGain = this.ctx.createGain();
+          this.sirenGain.gain.setValueAtTime(0.0001, now);
+          this.sirenOsc.connect(sirenFilter);
+          sirenFilter.connect(this.sirenGain);
+          this.sirenGain.connect(this.reverbNode);
+          this.sirenOsc.start(now);
+
+          // 5. Sterile hospital fluorescent room hum (Scene 4–5)
+          this.humOsc = this.ctx.createOscillator();
+          this.humOsc.type = "sine";
+          this.humOsc.frequency.setValueAtTime(120, now);
+          this.humGain = this.ctx.createGain();
+          this.humGain.gain.setValueAtTime(0.0001, now);
+          this.humOsc.connect(this.humGain);
+          this.humGain.connect(this.masterGain);
+          this.humOsc.start(now);
+        }
+
+        buildCueSheet() {
+          const cues = [];
+          const note = (t, freq, dur = 2.4, vel = 0.14) =>
+            cues.push({ t, type: "piano", freq, dur, vel });
+
+          // --- SCENE 1 (0.0 – 10.5s): Warm felt-piano motif for 19yo ---
+          note(0.25, 261.63, 2.8, 0.14); // C4
+          note(1.10, 329.63, 2.5, 0.12); // E4
+          note(1.95, 392.00, 2.6, 0.13); // G4
+          note(2.85, 493.88, 2.8, 0.11); // B4
+          cues.push({ t: 3.15, type: "click", pitch: 1500, vol: 0.08 }); // Pump check click
+          note(4.10, 220.00, 3.0, 0.14); // A3
+          note(5.05, 329.63, 2.6, 0.12); // E4
+          note(6.05, 392.00, 2.6, 0.12); // G4
+          note(7.15, 440.00, 2.9, 0.11); // A4
+          note(8.35, 174.61, 3.0, 0.13); // F3
+          note(9.35, 261.63, 2.6, 0.11); // C4
+
+          // --- SCENE 2 (10.5 – 15.0s): 12yo sister & lamp switches off ---
+          note(10.60, 329.63, 2.6, 0.13); // E4
+          cues.push({ t: 11.35, type: "click", pitch: 1660, vol: 0.07 }); // 12yo pump click
+          note(11.75, 392.00, 2.5, 0.12); // G4
+          note(12.80, 261.63, 2.4, 0.11); // C4
+          cues.push({ t: 13.70, type: "lampClick" }); // Lamp switches off into moonlight
+          cues.push({ t: 14.55, type: "doorSoft" });  // Bedroom door closes gently
+
+          // --- SCENE 3 (15.0 – 17.8s): Rapid clock ticks & Pump Occlusion Alarms ---
+          for (let i = 0; i < 6; i++) {
+            cues.push({ t: 15.04 + i * 0.11, type: "tick", pitch: i % 2 === 0 ? 1160 : 920 });
+          }
+          note(15.75, 110.00, 2.4, 0.14); // Low A2 tension
+          note(16.10, 116.54, 2.2, 0.11); // Bb2 dissonance
+          cues.push({ t: 16.05, type: "pumpAlarm" });
+          cues.push({ t: 16.80, type: "pumpAlarm" });
+          cues.push({ t: 17.38, type: "pumpAlarm" });
+
+          // --- SCENE 4 (17.8 – 21.0s): Ketones, Muffled Heartbeat & Emergency Rush ---
+          cues.push({ t: 17.85, type: "heartbeat", vol: 0.25 });
+          cues.push({ t: 18.45, type: "heartbeat", vol: 0.26 });
+          cues.push({ t: 19.05, type: "heartbeat", vol: 0.23 });
+          cues.push({ t: 18.12, type: "meterBeep" }); // Ketone meter high alert
+          cues.push({ t: 18.58, type: "doorBurst" }); // 19yo bursts into bedroom
+          note(18.65, 146.83, 2.0, 0.14); // D3 urgency
+          note(18.88, 155.56, 2.0, 0.12); // Eb3 tension
+
+          // --- SCENE 5 (21.0 – 23.8s): Three Days in Hospital (ECG beeps + gentle ache) ---
+          cues.push({ t: 21.18, type: "ecgBeep" });
+          cues.push({ t: 21.86, type: "ecgBeep" });
+          cues.push({ t: 22.54, type: "ecgBeep" });
+          cues.push({ t: 23.22, type: "ecgBeep" });
+          note(21.40, 220.00, 2.8, 0.11); // A3
+          note(22.15, 329.63, 2.6, 0.10); // E4
+
+          // --- SCENE 6 (23.8 – 32.8s): Crying alone -> Warm emotional resolution on Sister Hug ---
+          // Fragile solitary piano notes while crying
+          note(24.15, 440.00, 3.2, 0.10); // A4
+          note(25.45, 329.63, 3.0, 0.09); // E4
+          note(26.75, 523.25, 3.0, 0.09); // C5
+          note(28.05, 493.88, 3.0, 0.09); // B4
+
+          // Door gently swings open in golden hallway light (29.4s)
+          cues.push({ t: 29.42, type: "doorSoft" });
+
+          // Warm emotional felt-piano chord progression resolving softly on the sister hug
+          note(29.85, 174.61, 3.6, 0.14); // F3 warm root
+          note(30.20, 261.63, 3.4, 0.12); // C4
+          note(30.65, 329.63, 3.4, 0.12); // E4
+          note(31.15, 440.00, 3.4, 0.13); // A4
+          note(31.85, 392.00, 3.2, 0.12); // G4
+          note(32.35, 261.63, 2.8, 0.11); // C4 gentle resolution
+
+          // --- SCENE 7 (32.8 – 40.0s): Poignant chord fading cleanly to TOTAL SILENCE before "None." ---
+          note(33.10, 110.00, 3.6, 0.13); // A2 deep solemn tone
+          note(33.20, 164.81, 3.4, 0.09); // E3
+          note(35.80, 220.00, 1.85, 0.08); // A3 quiet resonance ending completely by 37.7s
+          // 37.8s – 40.0s: COMPLETE SILENCE
+
+          return cues;
+        }
+
+        resetCuesForTime(t) {
+          this.firedCues.clear();
+          this.cues.forEach((c, idx) => {
+            if (c.t < t - 0.06) this.firedCues.add(idx);
+          });
+        }
+
+        silenceContinuous() {
+          if (!this.initialized || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          [this.droneGain, this.padGain, this.rainGain, this.sirenGain, this.humGain].forEach((g) => {
+            if (g) g.gain.setTargetAtTime(0.0001, now, 0.06);
+          });
+        }
+
+        setMuted(muted) {
+          this.isMuted = muted;
+          if (this.masterGain && this.ctx) {
+            this.masterGain.gain.setTargetAtTime(muted ? 0 : 0.86, this.ctx.currentTime, 0.05);
+          }
+        }
+
+        update(t, isPlaying) {
+          if (!this.initialized || !this.ctx) return;
+          if (!isPlaying) {
+            this.silenceContinuous();
+            return;
+          }
+
+          const now = this.ctx.currentTime;
+
+          // 1. Warm atmospheric pad (opening, hospital, sister hug -> fades cleanly to 0 before 37.6s)
+          let padTarget = 0.0001;
+          if (t < 14.3) {
+            padTarget = 0.044 * smoothstep(t / 1.1) * (1 - smoothstep((t - 12.8) / 1.5));
+          } else if (t >= 21.0 && t < 23.8) {
+            padTarget = 0.026 * smoothstep((t - 21.0) / 0.5);
+          } else if (t >= 29.4 && t < 37.4) {
+            const level = t < 32.8 ? 0.058 : 0.028;
+            padTarget = level * smoothstep((t - 29.4) / 0.85) * (1 - smoothstep((t - 35.8) / 1.5));
+          }
+          this.padGain.gain.setTargetAtTime(padTarget, now, 0.14);
+
+          // 2. Tension sub-bass drone (15.0s – 20.9s)
+          let droneTarget = 0.0001;
+          if (t >= 15.0 && t < 20.9) {
+            const rampIn = smoothstep((t - 15.0) / 0.7);
+            const fadeOut = 1 - smoothstep((t - 20.1) / 0.8);
+            droneTarget = 0.078 * rampIn * fadeOut * (t >= 17.8 ? 1.12 : 0.88);
+          }
+          this.droneGain.gain.setTargetAtTime(droneTarget, now, 0.1);
+
+          // 3. Rain hiss + sweeping ambulance siren (19.3s – 20.3s)
+          if (t >= 19.25 && t < 20.32) {
+            const env = smoothstep((t - 19.25) / 0.15) * (1 - smoothstep((t - 20.02) / 0.3));
+            this.rainGain.gain.setTargetAtTime(0.072 * env, now, 0.05);
+            this.sirenGain.gain.setTargetAtTime(0.048 * env, now, 0.05);
+            const sirenPitch = 640 + Math.sin((t - 19.25) * 9.0) * 195;
+            this.sirenOsc.frequency.setTargetAtTime(sirenPitch, now, 0.035);
+          } else {
+            this.rainGain.gain.setTargetAtTime(0.0001, now, 0.07);
+            this.sirenGain.gain.setTargetAtTime(0.0001, now, 0.07);
+          }
+
+          // 4. Sterile ER / corridor hum (20.2s – 23.8s)
+          if (t >= 20.2 && t < 23.8) {
+            const env = smoothstep((t - 20.2) / 0.18) * (1 - smoothstep((t - 23.3) / 0.5));
+            const lvl = t < 21.0 ? 0.044 : 0.018;
+            this.humGain.gain.setTargetAtTime(lvl * env, now, 0.07);
+          } else {
+            this.humGain.gain.setTargetAtTime(0.0001, now, 0.08);
+          }
+
+          // 5. Trigger discrete cues tightly synced to current playback timestamp
+          for (let i = 0; i < this.cues.length; i++) {
+            if (this.firedCues.has(i)) continue;
+            const c = this.cues[i];
+            if (t >= c.t && t < c.t + 0.32) {
+              this.firedCues.add(i);
+              this.triggerCue(c);
+            }
+          }
+        }
+
+        triggerCue(c) {
+          const now = this.ctx.currentTime;
+          switch (c.type) {
+            case "piano":
+              this.playFeltPiano(c.freq, c.dur, c.vel, now);
+              break;
+            case "click":
+              this.playSoftClick(c.pitch, c.vol, now);
+              break;
+            case "lampClick":
+              this.playSoftClick(520, 0.14, now);
+              this.playSoftClick(980, 0.09, now + 0.03);
+              break;
+            case "doorSoft":
+              this.playThud(96, 0.11, 0.18, now);
+              break;
+            case "doorBurst":
+              this.playThud(70, 0.26, 0.24, now);
+              this.playSoftClick(420, 0.14, now + 0.04);
+              break;
+            case "tick":
+              this.playSoftClick(c.pitch, 0.06, now);
+              break;
+            case "pumpAlarm":
+              // Authentic crisp medical triple-beep occlusion alarm
+              this.playMedicalBeep(2680, 0.085, 0.09, now);
+              this.playMedicalBeep(2680, 0.085, 0.09, now + 0.14);
+              this.playMedicalBeep(3180, 0.135, 0.10, now + 0.28);
+              break;
+            case "meterBeep":
+              this.playMedicalBeep(2260, 0.11, 0.08, now);
+              this.playMedicalBeep(2260, 0.11, 0.08, now + 0.19);
+              break;
+            case "heartbeat":
+              this.playThud(58, c.vol, 0.15, now);
+              this.playThud(46, c.vol * 0.72, 0.17, now + 0.21);
+              break;
+            case "ecgBeep":
+              this.playMedicalBeep(940, 0.072, 0.055, now);
+              break;
+          }
+        }
+
+        playFeltPiano(freq, dur, vel, now) {
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          osc1.type = "triangle";
+          osc2.type = "sine";
+          osc1.frequency.setValueAtTime(freq, now);
+          osc2.frequency.setValueAtTime(freq * 2, now);
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(freq * 3.0, now);
+          filter.frequency.exponentialRampToValueAtTime(Math.max(250, freq * 1.05), now + dur * 0.7);
+
+          const g1 = this.ctx.createGain();
+          const g2 = this.ctx.createGain();
+          g2.gain.value = 0.16;
+
+          g1.gain.setValueAtTime(0.0001, now);
+          g1.gain.linearRampToValueAtTime(vel, now + 0.025);
+          g1.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+          osc1.connect(filter);
+          osc2.connect(g2);
+          g2.connect(filter);
+          filter.connect(g1);
+          g1.connect(this.masterGain);
+          g1.connect(this.reverbNode);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + dur + 0.06);
+          osc2.stop(now + dur + 0.06);
+        }
+
+        playMedicalBeep(freq, dur, vol, now) {
+          const osc = this.ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now);
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(vol, now + 0.008);
+          g.gain.setValueAtTime(vol, now + dur - 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+          osc.connect(g);
+          g.connect(this.masterGain);
+          g.connect(this.reverbNode);
+          osc.start(now);
+          osc.stop(now + dur + 0.03);
+        }
+
+        playSoftClick(freq, vol, now) {
+          const osc = this.ctx.createOscillator();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 0.35, now + 0.035);
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(vol, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+          osc.connect(g);
+          g.connect(this.masterGain);
+          osc.start(now);
+          osc.stop(now + 0.045);
+        }
+
+        playThud(freq, vol, dur, now) {
+          const osc = this.ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(28, now + dur);
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(vol, now + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+          osc.connect(g);
+          g.connect(this.masterGain);
+          osc.start(now);
+          osc.stop(now + dur + 0.03);
+        }
+      }
+
+      /* ========================================================================
+         4. CANVAS RENDERER, FILM GRAIN & PAINTERLY ILLUSTRATION HELPERS
+         ======================================================================== */
+      const canvas = document.getElementById("film-canvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+
+      // Subtle offscreen animated film grain texture
+      const grainCanvas = document.createElement("canvas");
+      grainCanvas.width = 240;
+      grainCanvas.height = 120;
+      const grainCtx = grainCanvas.getContext("2d");
+      let grainFrame = 0;
+
+      function updateGrain() {
+        const img = grainCtx.createImageData(grainCanvas.width, grainCanvas.height);
+        const data = img.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const v = Math.random() * 255;
+          data[i] = v;
+          data[i + 1] = v;
+          data[i + 2] = v;
+          data[i + 3] = 15;
+        }
+        grainCtx.putImageData(img, 0, 0);
+      }
+      updateGrain();
+
+      // Atmospheric floating dust motes
+      const dustMotes = Array.from({ length: 44 }, () => ({
+        x: Math.random() * LOGICAL_W,
+        y: Math.random() * LOGICAL_H,
+        r: 0.9 + Math.random() * 2.0,
+        vx: (Math.random() - 0.5) * 8,
+        vy: -2 - Math.random() * 6,
+        alpha: 0.16 + Math.random() * 0.44,
+        phase: Math.random() * Math.PI * 2
+      }));
+
+      // Rain streaks for ambulance window (Scene 4)
+      const raindrops = Array.from({ length: 82 }, () => ({
+        x: Math.random() * LOGICAL_W,
+        y: Math.random() * LOGICAL_H,
+        len: 16 + Math.random() * 36,
+        speed: 260 + Math.random() * 380,
+        r: 1.5 + Math.random() * 2.5
+      }));
+
+      function drawRoundedRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+      }
+
+      function drawSoftGlow(c, x, y, radius, colorInner, colorOuter = "rgba(0,0,0,0)") {
+        const grad = c.createRadialGradient(x, y, 0, x, y, radius);
+        grad.addColorStop(0, colorInner);
+        grad.addColorStop(1, colorOuter);
+        c.fillStyle = grad;
+        c.beginPath();
+        c.arc(x, y, radius, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      function drawDust(c, t, tint = "rgba(255, 224, 180, ") {
+        c.save();
+        for (const m of dustMotes) {
+          const x = ((m.x + t * m.vx) % LOGICAL_W + LOGICAL_W) % LOGICAL_W;
+          const y = ((m.y + t * m.vy) % LOGICAL_H + LOGICAL_H) % LOGICAL_H;
+          const a = m.alpha * (0.65 + 0.35 * Math.sin(t * 1.4 + m.phase));
+          c.fillStyle = `${tint}${a.toFixed(3)})`;
+          c.beginPath();
+          c.arc(x, y, m.r, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+      }
+
+      function drawVignette(c, strength = 0.55, tint = "0,0,0") {
+        const grad = c.createRadialGradient(
+          LOGICAL_W * 0.5, LOGICAL_H * 0.5, LOGICAL_H * 0.32,
+          LOGICAL_W * 0.5, LOGICAL_H * 0.5, LOGICAL_W * 0.66
+        );
+        grad.addColorStop(0, `rgba(${tint},0)`);
+        grad.addColorStop(1, `rgba(${tint},${strength})`);
+        c.fillStyle = grad;
+        c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+      }
+
+      /* ------------------------------------------------------------------------
+         MEDICAL DEVICES & PROPS HELPERS
+         ------------------------------------------------------------------------ */
+      function drawMiniPump(c, x, y, scale, screenColor, ledColor, pulse = 1) {
+        c.save();
+        c.translate(x, y);
+        c.scale(scale, scale);
+
+        drawSoftGlow(c, 0, 0, 44 * pulse, screenColor.replace(/[\d.]+\)$/, "0.34)"));
+
+        drawRoundedRect(c, -22, -32, 44, 64, 9);
+        c.fillStyle = "#1c2230";
+        c.fill();
+        c.strokeStyle = "#3c4760";
+        c.lineWidth = 2;
+        c.stroke();
+
+        drawRoundedRect(c, -15, -23, 30, 26, 4);
+        c.fillStyle = screenColor;
+        c.fill();
+
+        c.fillStyle = "#48546e";
+        c.beginPath();
+        c.arc(-8, 14, 3.5, 0, Math.PI * 2);
+        c.arc(8, 14, 3.5, 0, Math.PI * 2);
+        c.arc(0, 22, 3.5, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = ledColor;
+        c.beginPath();
+        c.arc(13, -27, 2.5, 0, Math.PI * 2);
+        c.fill();
+
+        c.restore();
+      }
+
+      function drawTubing(c, x1, y1, cx1, cy1, cx2, cy2, x2, y2, alpha = 0.62, width = 2.5, tint = "210, 232, 255") {
+        c.save();
+        c.lineCap = "round";
+        c.strokeStyle = `rgba(${tint}, ${alpha})`;
+        c.lineWidth = width;
+        c.beginPath();
+        c.moveTo(x1, y1);
+        c.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+        c.stroke();
+
+        c.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.55})`;
+        c.lineWidth = width * 0.34;
+        c.stroke();
+        c.restore();
+      }
+
+      function drawGlucoseCard(c, x, y, num, unit, color, alpha, alert = false) {
+        c.save();
+        c.globalAlpha = alpha;
+        drawRoundedRect(c, x, y, 148, 68, 12);
+        c.fillStyle = alert ? "rgba(44, 8, 15, 0.90)" : "rgba(15, 23, 34, 0.80)";
+        c.fill();
+        c.strokeStyle = alert ? "rgba(255, 72, 88, 0.88)" : "rgba(110, 232, 170, 0.48)";
+        c.lineWidth = 1.9;
+        c.stroke();
+
+        c.fillStyle = color;
+        c.beginPath();
+        c.arc(x + 19, y + 21, 4.6, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = "#f4f8ff";
+        c.font = "600 28px -apple-system, BlinkMacSystemFont, sans-serif";
+        c.fillText(num, x + 32, y + 35);
+
+        c.fillStyle = color;
+        c.font = "600 13px -apple-system, BlinkMacSystemFont, sans-serif";
+        c.fillText(unit, x + 32, y + 55);
+        c.restore();
+      }
+
+      // Flashing inset ketone meter reading "4.8 mmol/L — HIGH" (Scene 4)
+      function drawKetoneMeterInset(c, x, y, alpha, lt) {
+        c.save();
+        c.globalAlpha = alpha;
+        c.translate(x, y);
+
+        const flash = 0.55 + 0.45 * Math.sin(lt * 11.0);
+
+        // Soft warning halo
+        drawSoftGlow(c, 118, 96, 175, `rgba(255, 56, 74, ${0.32 * flash})`);
+
+        // Handheld ketone meter casing
+        drawRoundedRect(c, 0, 0, 236, 192, 22);
+        c.fillStyle = "#161d28";
+        c.fill();
+        c.strokeStyle = `rgba(255, 82, 98, ${0.55 + 0.45 * flash})`;
+        c.lineWidth = 3;
+        c.stroke();
+
+        // Top test strip slot & inserted blood ketone strip
+        drawRoundedRect(c, 92, -32, 52, 36, 5);
+        c.fillStyle = "#dde6ee";
+        c.fill();
+        c.fillStyle = "#8a2232";
+        c.fillRect(102, -32, 32, 11);
+
+        // High-contrast backlit LCD display
+        drawRoundedRect(c, 18, 20, 200, 116, 10);
+        c.fillStyle = flash > 0.5 ? "#380d16" : "#220910";
+        c.fill();
+        c.strokeStyle = "rgba(255, 110, 122, 0.35)";
+        c.lineWidth = 1.5;
+        c.stroke();
+
+        c.textAlign = "center";
+        c.fillStyle = "#ff8fa0";
+        c.font = "700 12px monospace";
+        c.fillText("BLOOD KETONES", 118, 41);
+
+        c.fillStyle = "#ffffff";
+        c.font = "800 44px -apple-system, BlinkMacSystemFont, sans-serif";
+        c.fillText("4.8", 88, 90);
+
+        c.fillStyle = "#ffd1d8";
+        c.font = "600 15px -apple-system, sans-serif";
+        c.fillText("mmol/L", 168, 86);
+
+        // Flashing HIGH badge
+        drawRoundedRect(c, 42, 102, 152, 25, 6);
+        c.fillStyle = flash > 0.45 ? "#e0243d" : "#8f1526";
+        c.fill();
+        c.fillStyle = "#ffffff";
+        c.font = "800 13px -apple-system, sans-serif";
+        c.fillText("4.8 mmol/L — HIGH", 118, 119);
+
+        // Meter navigation buttons
+        c.fillStyle = "#2d384b";
+        c.beginPath();
+        c.arc(82, 162, 11, 0, Math.PI * 2);
+        c.arc(154, 162, 11, 0, Math.PI * 2);
+        c.fill();
+
+        c.restore();
+      }
+
+      // Everyday diabetes supplies arranged beside 19yo (Scene 1)
+      function drawDiabetesSupplies(c, x, y, alpha = 1) {
+        if (alpha <= 0.01) return;
+        c.save();
+        c.globalAlpha = alpha;
+        c.translate(x, y);
+
+        // Zippered diabetes travel pouch
+        drawRoundedRect(c, -66, -18, 88, 54, 12);
+        c.fillStyle = "#2b4250";
+        c.fill();
+        c.strokeStyle = "#567587";
+        c.lineWidth = 2;
+        c.stroke();
+        c.strokeStyle = "#94aebd";
+        c.lineWidth = 1.6;
+        c.beginPath();
+        c.moveTo(-60, -4);
+        c.lineTo(16, -4);
+        c.stroke();
+        // Tiny medical cross emblem
+        c.fillStyle = "rgba(232, 244, 250, 0.72)";
+        c.fillRect(-28, 11, 14, 4);
+        c.fillRect(-23, 6, 4, 14);
+
+        // Glucose tablet tube
+        c.save();
+        c.translate(38, 14);
+        c.rotate(0.28);
+        drawRoundedRect(c, -8, -22, 16, 44, 4);
+        c.fillStyle = "#ebe6dd";
+        c.fill();
+        drawRoundedRect(c, -9, -26, 18, 9, 3);
+        c.fillStyle = "#e67c3a";
+        c.fill();
+        c.fillStyle = "#db6e2b";
+        c.fillRect(-6, -8, 12, 15);
+        c.restore();
+
+        // Spare blue insulin pen
+        c.save();
+        c.translate(-12, 46);
+        c.rotate(-0.13);
+        drawRoundedRect(c, -48, -5, 94, 10, 4);
+        c.fillStyle = "#3f7cb8";
+        c.fill();
+        c.fillStyle = "#d8ebfc";
+        c.fillRect(14, -4, 19, 8);
+        c.fillStyle = "#254d7a";
+        drawRoundedRect(c, -53, -6, 14, 12, 3);
+        c.fill();
+        c.restore();
+
+        // Extra sealed infusion set package
+        c.fillStyle = "rgba(224, 236, 246, 0.88)";
+        c.beginPath();
+        c.arc(64, 36, 17, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#6c94bd";
+        c.lineWidth = 2;
+        c.stroke();
+        c.fillStyle = "#ffffff";
+        c.beginPath();
+        c.arc(64, 36, 7.5, 0, Math.PI * 2);
+        c.fill();
+
+        // Blood glucose meter beside pouch
+        drawRoundedRect(c, -106, 8, 32, 45, 7);
+        c.fillStyle = "#1c2432";
+        c.fill();
+        drawRoundedRect(c, -101, 14, 22, 19, 3);
+        c.fillStyle = "#76b89c";
+        c.fill();
+
+        c.restore();
+      }
+
+      // Circular macro inset zooming into her 3-day infusion site cannula (Scene 1: 5.3–7.4s)
+      function drawInfusionSiteInset(c, x, y, alpha, scaleIn, t) {
+        if (alpha <= 0.01) return;
+        c.save();
+        c.globalAlpha = alpha;
+        c.translate(x, y);
+        const s = lerp(0.84, 1.0, scaleIn);
+        c.scale(s, s);
+
+        c.save();
+        c.beginPath();
+        c.arc(0, 0, 78, 0, Math.PI * 2);
+        c.fillStyle = "#2a201e";
+        c.fill();
+        c.clip();
+
+        // Warm skin backdrop
+        const sg = c.createRadialGradient(-10, -14, 10, 0, 0, 86);
+        sg.addColorStop(0, "#f2cab0");
+        sg.addColorStop(1, "#c49174");
+        c.fillStyle = sg;
+        c.fillRect(-84, -84, 168, 168);
+
+        // White oval medical tape patch
+        c.fillStyle = "rgba(247, 249, 252, 0.95)";
+        c.beginPath();
+        c.ellipse(0, 4, 46, 36, -0.08, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "rgba(182, 194, 210, 0.85)";
+        c.lineWidth = 2;
+        c.stroke();
+
+        // Delicate cannula pulse indicator
+        const pulse = 0.5 + 0.5 * Math.sin(t * 4.6);
+        c.strokeStyle = `rgba(110, 215, 185, ${0.35 + 0.42 * pulse})`;
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(0, 4, 18 + pulse * 5, 0, Math.PI * 2);
+        c.stroke();
+
+        // Thin translucent tubing connecting into infusion hub
+        drawTubing(c, -86, 18, -48, 28, -24, 12, -10, 6, 0.88, 5.2, "222, 242, 255");
+
+        // Cannula hub
+        c.fillStyle = "#dee8f5";
+        c.beginPath();
+        c.arc(0, 4, 14.5, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#88a0bc";
+        c.lineWidth = 2;
+        c.stroke();
+        c.fillStyle = "#6ca6d6";
+        c.beginPath();
+        c.arc(0, 4, 4.6, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // Circular warm frame border
+        c.strokeStyle = "rgba(234, 182, 122, 0.78)";
+        c.lineWidth = 2.6;
+        c.beginPath();
+        c.arc(0, 0, 78, 0, Math.PI * 2);
+        c.stroke();
+
+        // Subtle label pill
+        drawRoundedRect(c, -58, 60, 116, 23, 6);
+        c.fillStyle = "rgba(14, 18, 26, 0.90)";
+        c.fill();
+        c.fillStyle = "#f2e5d5";
+        c.font = "600 11px -apple-system, sans-serif";
+        c.textAlign = "center";
+        c.fillText("INFUSION SITE • 3D", 0, 75);
+
+        c.restore();
+      }
+
+      /* ------------------------------------------------------------------------
+         PAINTERLY CHARACTER RENDERERS
+         ------------------------------------------------------------------------ */
+      function drawOlderSister(c, x, y, opts = {}) {
+        const {
+          scale = 1,
+          breath = 0,
+          headTilt = 0,
+          expression = "warm",
+          armReach = 0,
+          blink = false,
+          lightTint = "rgba(255, 196, 126, 0.22)"
+        } = opts;
+
+        c.save();
+        c.translate(x, y + breath * 2.1);
+        c.scale(scale, scale);
+
+        // Back hair & messy bun
+        c.fillStyle = "#241b1b";
+        c.beginPath();
+        c.arc(-34, -144, 24, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.ellipse(-2, -124, 42, 46, 0.08, 0, Math.PI * 2);
+        c.fill();
+
+        // Torso — cozy sage-slate oversized hoodie
+        c.fillStyle = "#48595b";
+        c.beginPath();
+        c.moveTo(-54, -76);
+        c.quadraticCurveTo(-66, 20, -60, 108);
+        c.lineTo(58, 108);
+        c.quadraticCurveTo(64, 15, 50, -76);
+        c.closePath();
+        c.fill();
+
+        // Soft hoodie shading
+        c.fillStyle = "rgba(15, 20, 26, 0.28)";
+        c.beginPath();
+        c.moveTo(-54, -76);
+        c.quadraticCurveTo(-30, 10, -48, 108);
+        c.lineTo(-60, 108);
+        c.quadraticCurveTo(-66, 20, -54, -76);
+        c.fill();
+
+        // Collar & drawstrings
+        c.fillStyle = "#566a6d";
+        c.beginPath();
+        c.ellipse(0, -74, 44, 18, 0, 0, Math.PI * 2);
+        c.fill();
+
+        c.strokeStyle = "#d8d4c8";
+        c.lineWidth = 2.6;
+        c.beginPath();
+        c.moveTo(-10, -64);
+        c.quadraticCurveTo(-13, -32, -8, -14);
+        c.moveTo(10, -64);
+        c.quadraticCurveTo(14, -34, 11, -12);
+        c.stroke();
+
+        // Front pocket
+        c.fillStyle = "#3f4f51";
+        drawRoundedRect(c, -38, 34, 76, 46, 12);
+        c.fill();
+
+        // Insulin pump clipped at waistband/pocket
+        drawMiniPump(c, -45, 76, 0.56, "rgba(110, 232, 168, 1)", "#6effb0", 1);
+        drawTubing(c, -45, 58, -60, 32, -26, 38, -22, 62, 0.65, 2.1);
+
+        // Right arm (resting or reaching warmly toward little sister)
+        c.save();
+        c.strokeStyle = "#4c5f61";
+        c.lineWidth = 30;
+        c.lineCap = "round";
+        c.lineJoin = "round";
+        c.beginPath();
+        c.moveTo(42, -52);
+        const elbowX = lerp(54, 96, armReach);
+        const elbowY = lerp(8, -12, armReach);
+        const handX = lerp(30, 142, armReach);
+        const handY = lerp(48, -22, armReach);
+        c.quadraticCurveTo(elbowX, elbowY, handX, handY);
+        c.stroke();
+
+        c.fillStyle = "#e6bba0";
+        c.beginPath();
+        c.ellipse(handX + 6, handY + 2, 14, 10, -0.2, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // Neck
+        c.fillStyle = "#d8a88b";
+        drawRoundedRect(c, -12, -92, 24, 26, 8);
+        c.fill();
+
+        // Head
+        c.save();
+        c.translate(0, -118);
+        c.rotate(headTilt);
+
+        c.fillStyle = "#ecc2a8";
+        c.beginPath();
+        c.ellipse(2, 0, 34, 41, 0, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = "rgba(218, 120, 105, 0.18)";
+        c.beginPath();
+        c.ellipse(16, 12, 10, 6, 0, 0, Math.PI * 2);
+        c.ellipse(-10, 12, 8, 5, 0, 0, Math.PI * 2);
+        c.fill();
+
+        // Hair framing forehead
+        c.fillStyle = "#241b1b";
+        c.beginPath();
+        c.moveTo(-34, -10);
+        c.quadraticCurveTo(-30, -48, 8, -45);
+        c.quadraticCurveTo(38, -40, 36, -8);
+        c.quadraticCurveTo(18, -30, -6, -24);
+        c.quadraticCurveTo(-24, -18, -32, 16);
+        c.closePath();
+        c.fill();
+
+        c.strokeStyle = "#241b1b";
+        c.lineWidth = 3.2;
+        c.beginPath();
+        c.moveTo(26, -16);
+        c.quadraticCurveTo(36, 4, 28, 22);
+        c.stroke();
+
+        // Eyes
+        c.strokeStyle = "#231a18";
+        c.fillStyle = "#231a18";
+        c.lineWidth = 2.4;
+        c.lineCap = "round";
+
+        if (blink) {
+          c.beginPath();
+          c.arc(-6, 1, 5.5, 0.1 * Math.PI, 0.9 * Math.PI);
+          c.stroke();
+          c.beginPath();
+          c.arc(17, 1, 5.5, 0.1 * Math.PI, 0.9 * Math.PI);
+          c.stroke();
+        } else {
+          c.beginPath();
+          c.ellipse(-6, 0, 3.6, 4.4, 0, 0, Math.PI * 2);
+          c.ellipse(17, 0, 3.6, 4.4, 0, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = "rgba(255,255,255,0.85)";
+          c.beginPath();
+          c.arc(-5, -1.6, 1.3, 0, Math.PI * 2);
+          c.arc(18, -1.6, 1.3, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Brows
+        c.strokeStyle = "#2b1f1c";
+        c.lineWidth = 2.4;
+        c.beginPath();
+        if (expression === "worried") {
+          c.moveTo(-13, -8); c.lineTo(-1, -13);
+          c.moveTo(11, -13); c.lineTo(23, -8);
+        } else {
+          c.moveTo(-13, -11); c.quadraticCurveTo(-6, -14, 0, -11);
+          c.moveTo(11, -11); c.quadraticCurveTo(17, -14, 23, -11);
+        }
+        c.stroke();
+
+        // Nose & Mouth
+        c.strokeStyle = "rgba(130, 82, 62, 0.45)";
+        c.lineWidth = 1.8;
+        c.beginPath();
+        c.moveTo(7, 2); c.lineTo(9, 10); c.lineTo(5, 11);
+        c.stroke();
+
+        c.strokeStyle = "#8a5146";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        if (expression === "warm") {
+          c.moveTo(-2, 20);
+          c.quadraticCurveTo(6, 26, 15, 19);
+        } else if (expression === "worried") {
+          c.ellipse(6, 22, 5, 3.5, 0, 0, Math.PI * 2);
+        } else {
+          c.moveTo(0, 22);
+          c.quadraticCurveTo(6, 20, 13, 22);
+        }
+        c.stroke();
+
+        // Warm rim light accent
+        c.fillStyle = lightTint;
+        c.beginPath();
+        c.arc(22, -4, 16, -0.7, 1.0);
+        c.fill();
+
+        c.restore();
+        c.restore();
+      }
+
+      function drawYoungerSister(c, x, y, opts = {}) {
+        const {
+          scale = 1,
+          breath = 0,
+          headTilt = 0,
+          expression = "warm",
+          blink = false,
+          clutchingStomach = false,
+          paleFactor = 0,
+          sweat = 0,
+          pumpStatus = "ok"
+        } = opts;
+
+        c.save();
+        c.translate(x, y + breath * 2.0);
+        c.scale(scale, scale);
+
+        // Back shoulder-length hair
+        c.fillStyle = "#2f2222";
+        c.beginPath();
+        c.moveTo(-36, -118);
+        c.quadraticCurveTo(-48, -68, -38, -36);
+        c.lineTo(38, -36);
+        c.quadraticCurveTo(46, -68, 34, -118);
+        c.closePath();
+        c.fill();
+
+        // Torso — lavender/slate-blue star-patterned pajamas
+        c.fillStyle = "#5f6488";
+        c.beginPath();
+        c.moveTo(-40, -64);
+        c.quadraticCurveTo(-48, 12, -44, 88);
+        c.lineTo(44, 88);
+        c.quadraticCurveTo(48, 12, 40, -64);
+        c.closePath();
+        c.fill();
+
+        // Pajama star dots
+        c.fillStyle = "rgba(235, 232, 255, 0.36)";
+        [[-22, -32], [18, -26], [-8, 8], [24, 24], [-26, 44], [6, 54]].forEach(([sx, sy]) => {
+          c.beginPath();
+          c.arc(sx, sy, 2.2, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        c.strokeStyle = "#8a90b8";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(-14, -64); c.lineTo(0, -48); c.lineTo(14, -64);
+        c.stroke();
+
+        // Insulin pump clipped at waistband
+        if (pumpStatus !== "off") {
+          const pCol = pumpStatus === "alarm" ? "rgba(255, 68, 82, 1)" : "rgba(110, 232, 168, 1)";
+          const ledCol = pumpStatus === "alarm" ? "#ff3b4a" : "#70ffb2";
+          drawMiniPump(c, 39, 64, 0.52, pCol, ledCol, 1);
+          drawTubing(c, 39, 48, 52, 26, 22, 34, 18, 56, 0.65, 2.0);
+        }
+
+        // Arms
+        c.strokeStyle = "#686e96";
+        c.lineWidth = 22;
+        c.lineCap = "round";
+        if (clutchingStomach) {
+          c.beginPath();
+          c.moveTo(-36, -42);
+          c.quadraticCurveTo(-44, 14, 14, 22);
+          c.moveTo(36, -42);
+          c.quadraticCurveTo(42, 10, -14, 28);
+          c.stroke();
+        } else {
+          c.beginPath();
+          c.moveTo(-36, -44);
+          c.quadraticCurveTo(-48, 8, -24, 52);
+          c.moveTo(36, -44);
+          c.quadraticCurveTo(46, 8, 22, 52);
+          c.stroke();
+        }
+
+        // Skin tone shifts pale during ketones/DKA
+        const skinR = Math.round(lerp(238, 212, paleFactor));
+        const skinG = Math.round(lerp(196, 212, paleFactor));
+        const skinB = Math.round(lerp(172, 206, paleFactor));
+        const skinCol = `rgb(${skinR}, ${skinG}, ${skinB})`;
+
+        c.fillStyle = skinCol;
+        drawRoundedRect(c, -9, -78, 18, 20, 6);
+        c.fill();
+
+        // Head
+        c.save();
+        c.translate(0, -104);
+        c.rotate(headTilt);
+
+        c.fillStyle = skinCol;
+        c.beginPath();
+        c.ellipse(0, 0, 31, 35, 0, 0, Math.PI * 2);
+        c.fill();
+
+        if (paleFactor > 0.2 || expression === "sick") {
+          c.fillStyle = "rgba(85, 85, 120, 0.24)";
+          c.beginPath();
+          c.ellipse(-11, 8, 7, 3.2, 0, 0, Math.PI * 2);
+          c.ellipse(11, 8, 7, 3.2, 0, 0, Math.PI * 2);
+          c.fill();
+        } else {
+          c.fillStyle = "rgba(225, 130, 120, 0.22)";
+          c.beginPath();
+          c.ellipse(-15, 10, 7, 4.5, 0, 0, Math.PI * 2);
+          c.ellipse(15, 10, 7, 4.5, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Bangs & side locks
+        c.fillStyle = "#2f2222";
+        c.beginPath();
+        c.moveTo(-33, -6);
+        c.quadraticCurveTo(-30, -40, 0, -39);
+        c.quadraticCurveTo(30, -40, 33, -6);
+        c.lineTo(24, -12);
+        c.lineTo(14, -19);
+        c.lineTo(4, -11);
+        c.lineTo(-8, -18);
+        c.lineTo(-22, -10);
+        c.closePath();
+        c.fill();
+
+        // Eyes
+        c.strokeStyle = "#221a1a";
+        c.fillStyle = "#221a1a";
+        c.lineWidth = 2.2;
+        c.lineCap = "round";
+
+        if (blink || expression === "sick") {
+          c.beginPath();
+          if (expression === "sick") {
+            c.moveTo(-16, -2); c.lineTo(-7, 2); c.lineTo(-16, 5);
+            c.moveTo(16, -2); c.lineTo(7, 2); c.lineTo(16, 5);
+          } else {
+            c.arc(-11, 1, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+            c.stroke();
+            c.beginPath();
+            c.arc(11, 1, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+          }
+          c.stroke();
+        } else {
+          c.beginPath();
+          c.ellipse(-11, 1, 3.7, 4.5, 0, 0, Math.PI * 2);
+          c.ellipse(11, 1, 3.7, 4.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = "rgba(255,255,255,0.85)";
+          c.beginPath();
+          c.arc(-10, -0.8, 1.4, 0, Math.PI * 2);
+          c.arc(12, -0.8, 1.4, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Brows
+        c.strokeStyle = "#322424";
+        c.lineWidth = 2.0;
+        c.beginPath();
+        if (expression === "sick") {
+          c.moveTo(-17, -7); c.lineTo(-6, -11);
+          c.moveTo(6, -11); c.lineTo(17, -7);
+        } else {
+          c.moveTo(-16, -9); c.quadraticCurveTo(-11, -12, -6, -9);
+          c.moveTo(6, -9); c.quadraticCurveTo(11, -12, 16, -9);
+        }
+        c.stroke();
+
+        // Mouth
+        c.strokeStyle = expression === "sick" ? "#7a6672" : "#965852";
+        c.lineWidth = 2.0;
+        c.beginPath();
+        if (expression === "warm") {
+          c.moveTo(-6, 17);
+          c.quadraticCurveTo(0, 23, 7, 17);
+        } else if (expression === "sick") {
+          c.moveTo(-6, 20);
+          c.quadraticCurveTo(0, 15, 6, 20);
+        } else {
+          c.moveTo(-5, 19);
+          c.quadraticCurveTo(0, 18.5, 5, 19.5);
+        }
+        c.stroke();
+
+        // Sweat beads during ketones/DKA
+        if (sweat > 0) {
+          c.fillStyle = `rgba(210, 235, 255, ${0.75 * sweat})`;
+          const dropOff = (sweat * 18) % 10;
+          c.beginPath();
+          c.ellipse(18, -14 + dropOff, 2.2, 3.6, 0, 0, Math.PI * 2);
+          c.ellipse(-20, -8 + dropOff * 0.7, 1.8, 3.0, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        c.restore();
+        c.restore();
+      }
+
+      /* ------------------------------------------------------------------------
+         SHARED TWO-BED BEDROOM ENVIRONMENT (Adapts across moods)
+         ------------------------------------------------------------------------ */
+      function drawBedroomBackdrop(c, mood, lampIntensity = 1, twoBeds = false) {
+        let wallTop, wallBot, floorCol, windowSky, blindSlatsAlpha;
+        if (mood === "warm") {
+          wallTop = "#332528";
+          wallBot = "#543b31";
+          floorCol = "#251a17";
+          windowSky = "#1a243e";
+          blindSlatsAlpha = 0.08;
+        } else if (mood === "moonlight") {
+          wallTop = "#0a0f1f";
+          wallBot = "#141f3a";
+          floorCol = "#080b15";
+          windowSky = "#1e2f59";
+          blindSlatsAlpha = 0.25;
+        } else if (mood === "sickDawn") {
+          wallTop = "#313c3f";
+          wallBot = "#4c5858";
+          floorCol = "#222a2c";
+          windowSky = "#8fa29f";
+          blindSlatsAlpha = 0.22;
+        } else {
+          // Cold twilight blue
+          wallTop = "#182133";
+          wallBot = "#26334a";
+          floorCol = "#101622";
+          windowSky = "#475e80";
+          blindSlatsAlpha = 0.16;
+        }
+
+        // Wall gradient
+        const wg = c.createLinearGradient(0, 0, 0, 452);
+        wg.addColorStop(0, wallTop);
+        wg.addColorStop(1, wallBot);
+        c.fillStyle = wg;
+        c.fillRect(-120, 0, LOGICAL_W + 240, 452);
+
+        // Floor
+        c.fillStyle = floorCol;
+        c.fillRect(-120, 452, LOGICAL_W + 240, LOGICAL_H - 452 + 40);
+
+        // Baseboard
+        c.fillStyle = "rgba(0,0,0,0.36)";
+        c.fillRect(-120, 444, LOGICAL_W + 240, 10);
+
+        // Bedroom Window with Blinds
+        c.save();
+        drawRoundedRect(c, 115, 66, 250, 260, 4);
+        c.fillStyle = windowSky;
+        c.fill();
+        c.strokeStyle = "rgba(20, 24, 34, 0.72)";
+        c.lineWidth = 10;
+        c.stroke();
+
+        if (mood === "moonlight") {
+          drawSoftGlow(c, 206, 142, 72, "rgba(185, 218, 255, 0.36)");
+          c.fillStyle = "#e0eeff";
+          c.beginPath();
+          c.arc(206, 142, 16, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // Window blinds
+        c.fillStyle = "rgba(16, 20, 32, 0.58)";
+        for (let y = 76; y < 320; y += 22) {
+          c.fillRect(120, y, 240, 8);
+        }
+        c.restore();
+
+        // Diagonal light shafts from window blinds
+        if (blindSlatsAlpha > 0) {
+          c.save();
+          const slatCol = mood === "sickDawn"
+            ? `rgba(205, 224, 218, ${blindSlatsAlpha})`
+            : `rgba(145, 188, 248, ${blindSlatsAlpha})`;
+          c.fillStyle = slatCol;
+          for (let i = 0; i < 6; i++) {
+            const baseY = 108 + i * 38;
+            c.beginPath();
+            c.moveTo(365, baseY);
+            c.lineTo(760, baseY + 130);
+            c.lineTo(760, baseY + 148);
+            c.lineTo(365, baseY + 18);
+            c.closePath();
+            c.fill();
+          }
+          c.restore();
+        }
+
+        // Wall framed landscape print
+        c.save();
+        c.fillStyle = "rgba(0,0,0,0.28)";
+        c.fillRect(544, 114, 132, 92);
+        c.fillStyle = mood === "warm" ? "#5f4b47" : "#26334a";
+        c.fillRect(540, 108, 132, 92);
+        c.strokeStyle = "rgba(255,255,255,0.14)";
+        c.lineWidth = 4;
+        c.strokeRect(540, 108, 132, 92);
+        c.fillStyle = "rgba(255,255,255,0.14)";
+        c.beginPath();
+        c.moveTo(548, 192); c.lineTo(590, 142); c.lineTo(626, 178); c.lineTo(648, 154); c.lineTo(664, 192);
+        c.closePath();
+        c.fill();
+        c.restore();
+
+        // Bedroom Door on far right
+        c.save();
+        c.fillStyle = mood === "warm" ? "#3b2c27" : "#151d2f";
+        c.fillRect(1175, 90, 174, 362);
+        c.strokeStyle = "rgba(0,0,0,0.48)";
+        c.lineWidth = 5;
+        c.strokeRect(1175, 90, 174, 362);
+        c.strokeStyle = "rgba(255,255,255,0.06)";
+        c.lineWidth = 2;
+        c.strokeRect(1198, 116, 128, 132);
+        c.strokeRect(1198, 276, 128, 140);
+        c.fillStyle = "#b99f7a";
+        c.beginPath();
+        c.arc(1196, 286, 6, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // Bed(s)
+        if (twoBeds) {
+          // Left Bed (19yo's bed)
+          drawSingleBed(c, 412, mood, "#4f5573");
+          // Right Adjacent Bed (12yo's bed)
+          drawSingleBed(c, 772, mood, "#565a7d");
+        } else {
+          // Centered Bed (for focused 12yo scenes)
+          c.save();
+          c.fillStyle = mood === "warm" ? "#473026" : "#1c2030";
+          drawRoundedRect(c, 468, 252, 504, 200, 10);
+          c.fill();
+          c.fillStyle = mood === "warm" ? "#e5d9cc" : mood === "sickDawn" ? "#adbab8" : "#6c7b99";
+          drawRoundedRect(c, 502, 292, 188, 66, 26);
+          c.fill();
+          drawRoundedRect(c, 726, 294, 192, 66, 26);
+          c.fill();
+          c.fillStyle = mood === "warm" ? "#4d5370" : mood === "sickDawn" ? "#5a6b70" : "#2d3c58";
+          drawRoundedRect(c, 452, 344, 536, 148, 20);
+          c.fill();
+          c.fillStyle = "rgba(255,255,255,0.08)";
+          drawRoundedRect(c, 458, 348, 524, 38, 14);
+          c.fill();
+          c.restore();
+        }
+
+        // Nightstand & Bedside Lamp (left of bed)
+        c.save();
+        const nx = twoBeds ? 286 : 318;
+        c.fillStyle = mood === "warm" ? "#3f2b22" : "#181d2c";
+        drawRoundedRect(c, nx, 358, 116, 118, 6);
+        c.fill();
+        c.strokeStyle = "rgba(255,255,255,0.07)";
+        c.lineWidth = 2;
+        c.strokeRect(nx + 12, 374, 92, 36);
+        c.strokeRect(nx + 12, 420, 92, 36);
+
+        // Lamp stand
+        const lx = nx + 58;
+        c.fillStyle = "#524640";
+        c.fillRect(lx - 6, 316, 12, 42);
+        drawRoundedRect(c, lx - 20, 350, 40, 8, 4);
+        c.fill();
+
+        // Lamp shade
+        c.fillStyle = lampIntensity > 0.1
+          ? `rgba(255, 220, 158, ${0.38 + lampIntensity * 0.62})`
+          : "#2e3547";
+        c.beginPath();
+        c.moveTo(lx - 34, 320);
+        c.lineTo(lx + 34, 320);
+        c.lineTo(lx + 22, 270);
+        c.lineTo(lx - 22, 270);
+        c.closePath();
+        c.fill();
+
+        if (lampIntensity > 0.01) {
+          c.save();
+          c.globalCompositeOperation = "screen";
+          drawSoftGlow(c, lx, 296, 540 * (0.72 + 0.28 * lampIntensity),
+            `rgba(255, 186, 102, ${0.35 * lampIntensity})`);
+          drawSoftGlow(c, lx, 300, 185,
+            `rgba(255, 226, 162, ${0.44 * lampIntensity})`);
+          c.restore();
+        }
+        c.restore();
+      }
+
+      function drawSingleBed(c, x, mood, duvetWarm) {
+        c.save();
+        c.fillStyle = mood === "warm" ? "#473026" : "#1c2030";
+        drawRoundedRect(c, x + 12, 258, 316, 192, 10);
+        c.fill();
+        c.fillStyle = mood === "warm" ? "#e5d9cc" : "#6c7b99";
+        drawRoundedRect(c, x + 68, 296, 204, 62, 24);
+        c.fill();
+        c.fillStyle = mood === "warm" ? duvetWarm : "#2c3a56";
+        drawRoundedRect(c, x, 344, 340, 146, 20);
+        c.fill();
+        c.fillStyle = "rgba(255,255,255,0.08)";
+        drawRoundedRect(c, x + 6, 348, 328, 36, 14);
+        c.fill();
+        c.restore();
+      }
+
+      /* ========================================================================
+         5. SCENE RENDERERS (EXACT 40.0-SECOND TIMELINE)
+         ======================================================================== */
+
+      /* ------------------------------------------------------------------------
+         SCENE 1 (0.0s – 10.5s): THE 19-YEAR-OLD SISTER
+         Warm amber shared bedroom with two beds. 19yo checks her pump ("112 mg/dL"),
+         circular macro inset of 3-day infusion site (5.3–7.4s), everyday diabetes
+         supplies beside her (7.5–9.6s), then smooth pan right toward 12yo's bed (9.6–10.5s).
+         ------------------------------------------------------------------------ */
+      function renderScene1(c, t) {
+        const panBeat = easeInOutSine(invLerp(9.5, 10.5, t));
+        const zoom = lerp(1.18, 1.07, panBeat) + easeInOutSine(invLerp(0, 9.5, t)) * 0.04;
+        const panX = lerp(138, -88, panBeat);
+        const panY = lerp(-12, -6, panBeat);
+
+        c.save();
+        c.translate(LOGICAL_W * 0.5 + panX, LOGICAL_H * 0.5 + panY);
+        c.scale(zoom, zoom);
+        c.translate(-LOGICAL_W * 0.5, -LOGICAL_H * 0.5);
+
+        drawBedroomBackdrop(c, "warm", 1.0, true);
+
+        const breath19 = Math.sin(t * 2.1);
+        const breath12 = Math.sin(t * 2.3 + 0.8);
+        const blink19 = (t % 4.1) > 3.96;
+        const blink12 = ((t + 1.5) % 3.8) > 3.67;
+
+        // Everyday diabetes supplies arranged clearly beside 19yo on her bed
+        drawDiabetesSupplies(c, 456, 434, 1.0);
+        const supplyGlow = smoothstep(invLerp(7.4, 8.0, t)) * (1 - smoothstep(invLerp(9.3, 9.8, t)));
+        if (supplyGlow > 0.01) {
+          c.save();
+          c.globalCompositeOperation = "screen";
+          drawSoftGlow(c, 456, 434, 150, `rgba(255, 214, 150, ${0.36 * supplyGlow})`);
+          c.restore();
+        }
+
+        // 19yo seated on left bed checking her insulin pump
+        drawOlderSister(c, 588, 356, {
+          scale: 1.04,
+          breath: breath19,
+          headTilt: lerp(0.10, 0.06, panBeat),
+          expression: "warm",
+          armReach: 0,
+          blink: blink19
+        });
+
+        // 12yo seated on the adjacent right bed (revealed smoothly during pan beat)
+        drawYoungerSister(c, 922, 378, {
+          scale: 0.96,
+          breath: breath12,
+          headTilt: -0.07,
+          expression: "warm",
+          blink: blink12,
+          pumpStatus: "ok"
+        });
+
+        // Glowing CGM card "112 mg/dL" (1.6s – 5.2s)
+        const cardAlpha = smoothstep(invLerp(1.5, 2.2, t)) * (1 - smoothstep(invLerp(4.8, 5.3, t)));
+        if (cardAlpha > 0.01) {
+          drawGlucoseCard(c, 412, 168, "112", "mg/dL →", "#67e8a5", cardAlpha);
+        }
+
+        // Circular macro inset of 3-day infusion site cannula (5.3s – 7.4s)
+        const siteIn = smoothstep(invLerp(5.2, 5.65, t));
+        const siteOut = 1 - smoothstep(invLerp(7.05, 7.45, t));
+        const siteAlpha = siteIn * siteOut;
+        if (siteAlpha > 0.01) {
+          drawInfusionSiteInset(c, 474, 212, siteAlpha, siteIn, t);
+        }
+
+        drawDust(c, t, "rgba(255, 216, 166, ");
+        c.restore();
+
+        // Crisp fade in from black at opening
+        if (t < 0.55) {
+          c.fillStyle = `rgba(0,0,0,${1 - smoothstep(t / 0.55)})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 2 (10.5s – 15.0s): THE 12-YEAR-OLD SISTER
+         10.5–12.7s: 12yo checks her own pump ("118 mg/dL") on adjacent bed,
+                     sharing a warm reassuring glance with her older sister.
+         12.7–15.0s: 12yo tucked under duvet with pump beside her pillow; warm
+                     lamp clicks off at 13.7s into cool quiet moonlight.
+         ------------------------------------------------------------------------ */
+      function renderScene2(c, t) {
+        const lt = t - 10.5; // 0..4.5s
+
+        // Beat A (0.0 – 2.2s): Adjacent bed — 12yo checking pump ("118 mg/dL") & reassuring glance
+        if (lt < 2.2) {
+          const zoom = lerp(1.07, 1.13, easeInOutSine(lt / 2.2));
+          c.save();
+          c.translate(LOGICAL_W * 0.5 - 88, LOGICAL_H * 0.5 - 6);
+          c.scale(zoom, zoom);
+          c.translate(-LOGICAL_W * 0.5, -LOGICAL_H * 0.5);
+
+          drawBedroomBackdrop(c, "warm", 1.0, true);
+          drawDiabetesSupplies(c, 456, 434, 1.0);
+
+          const glance = easeInOutSine(invLerp(0.3, 1.4, lt));
+          drawOlderSister(c, 608, 356, {
+            scale: 1.04,
+            breath: Math.sin(t * 2.0),
+            headTilt: lerp(0.06, 0.14, glance),
+            expression: "warm",
+            armReach: glance * 0.45,
+            blink: (t % 4.0) > 3.88
+          });
+
+          drawYoungerSister(c, 922, 378, {
+            scale: 0.96,
+            breath: Math.sin(t * 2.2 + 0.6),
+            headTilt: lerp(-0.07, -0.14, glance),
+            expression: "warm",
+            blink: ((t + 1.1) % 3.8) > 3.68,
+            pumpStatus: "ok"
+          });
+
+          const cgmAlpha = smoothstep(invLerp(0.15, 0.6, lt)) * (1 - smoothstep(invLerp(1.85, 2.18, lt)));
+          if (cgmAlpha > 0.01) {
+            drawGlucoseCard(c, 1004, 190, "118", "mg/dL →", "#67e8a5", cgmAlpha);
+          }
+
+          drawDust(c, t, "rgba(255, 216, 166, ");
+          c.restore();
+
+          // Soft dip into tucked-in bedtime shot
+          if (lt > 2.0) {
+            c.fillStyle = `rgba(0,0,0,${smoothstep((lt - 2.0) / 0.2) * 0.55})`;
+            c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+          }
+          return;
+        }
+
+        // Beat B (2.2 – 4.5s -> 12.7 – 15.0s): Tucked under duvet -> Lamp clicks off -> Moonlight
+        const bt = lt - 2.2; // 0..2.3s
+        const lampOffProgress = smoothstep(invLerp(0.95, 1.25, bt));
+        const lampOn = 1 - lampOffProgress;
+        const doorClose = smoothstep(invLerp(1.4, 2.1, bt));
+
+        c.save();
+        const panX = lerp(12, -16, easeInOutSine(bt / 2.3));
+        c.translate(panX, 0);
+
+        drawBedroomBackdrop(c, lampOn > 0.35 ? "warm" : "moonlight", lampOn, false);
+
+        if (lampOffProgress > 0) {
+          c.fillStyle = `rgba(6, 10, 24, ${0.42 * lampOffProgress})`;
+          c.fillRect(-60, 0, LOGICAL_W + 120, LOGICAL_H);
+        }
+
+        // Warm hallway light sliver closing quietly as older sister steps out
+        const sliverW = lerp(52, 0, doorClose);
+        if (sliverW > 1) {
+          c.save();
+          const hg = c.createLinearGradient(1175, 250, 1175 - sliverW * 5.2, 420);
+          hg.addColorStop(0, "rgba(255, 206, 138, 0.54)");
+          hg.addColorStop(1, "rgba(255, 206, 138, 0)");
+          c.fillStyle = hg;
+          c.beginPath();
+          c.moveTo(1175, 90);
+          c.lineTo(1175 + sliverW * 0.4, 90);
+          c.lineTo(1175 + sliverW * 0.4, 452);
+          c.lineTo(1175 - sliverW * 5.5, 452);
+          c.closePath();
+          c.fill();
+          c.restore();
+        }
+
+        // 19yo silhouette walking softly toward door
+        if (bt < 2.15) {
+          const walkT = smoothstep(invLerp(0.8, 2.05, bt));
+          const sx = lerp(470, 1148, walkT);
+          const sa = 1 - smoothstep(invLerp(1.8, 2.15, bt));
+          c.save();
+          c.globalAlpha = sa * 0.88;
+          c.fillStyle = lampOn > 0.5 ? "#2e2426" : "#0c1122";
+          c.beginPath();
+          c.ellipse(sx, 202, 24, 28, 0, 0, Math.PI * 2);
+          c.fill();
+          c.beginPath();
+          c.moveTo(sx - 34, 234);
+          c.quadraticCurveTo(sx - 44, 345, sx - 32, 455);
+          c.lineTo(sx + 34, 455);
+          c.quadraticCurveTo(sx + 44, 345, sx + 34, 234);
+          c.closePath();
+          c.fill();
+          c.restore();
+        }
+
+        // 12yo tucked snugly under duvet
+        const breath = Math.sin(t * 1.6);
+        const eyesClosed = bt > 0.35;
+
+        c.fillStyle = lampOn > 0.35 ? "#4a5172" : "#222f50";
+        c.beginPath();
+        c.moveTo(605, 372);
+        c.quadraticCurveTo(758, 308 + breath * 2.5, 948, 358);
+        c.lineTo(975, 470);
+        c.lineTo(552, 470);
+        c.closePath();
+        c.fill();
+
+        c.save();
+        c.translate(598, 346);
+        c.rotate(-0.18);
+        c.fillStyle = "#22191c";
+        c.beginPath();
+        c.ellipse(-10, 4, 38, 28, -0.1, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = lampOn > 0.35 ? "#e5bba2" : "#9aa6c2";
+        c.beginPath();
+        c.ellipse(6, 2, 26, 23, 0, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#1c1721";
+        c.lineWidth = 2.2;
+        c.beginPath();
+        if (eyesClosed) {
+          c.arc(2, 2, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
+          c.stroke();
+          c.beginPath();
+          c.arc(16, 4, 4.5, 0.1 * Math.PI, 0.9 * Math.PI);
+          c.stroke();
+        } else {
+          c.fillStyle = "#1c1721";
+          c.arc(2, 1, 2.8, 0, Math.PI * 2);
+          c.arc(16, 3, 2.8, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+
+        // Insulin pump beside her pillow with calm pulsing blue glow
+        const ledPulse = 0.72 + 0.28 * Math.sin(t * 2.8);
+        drawMiniPump(c, 520, 360, 0.56, "rgba(85, 165, 255, 0.95)", "#7ab8ff", ledPulse);
+        drawTubing(c, 532, 360, 570, 390, 620, 384, 660, 374, 0.65, 2.2);
+
+        drawDust(c, t, lampOn > 0.35 ? "rgba(255, 215, 165, " : "rgba(165, 200, 255, ");
+        c.restore();
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 3 (15.0s – 17.8s): PUMP FAILURE (3:14 AM)
+         - 0.00..0.75s: Fast digital clock timelapse "11:30 PM" -> "3:14 AM"
+         - 0.75..1.95s: Macro close-up of pinched/kinked tubing -> flashing
+                        crimson "OCCLUSION — NO DELIVERY" screen
+         - 1.95..2.80s: CGM spiking to "385 ↑↑", bathing sleeping face in red
+         ------------------------------------------------------------------------ */
+      function renderScene3(c, t) {
+        const lt = t - 15.0; // 0..2.8s
+
+        // BEAT A: Digital bedside clock timelapse (0.00..0.75s)
+        if (lt < 0.75) {
+          c.fillStyle = "#060811";
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+          const drift = lt * 52;
+          c.fillStyle = "rgba(95, 130, 205, 0.08)";
+          for (let i = 0; i < 6; i++) {
+            c.fillRect(0, 60 + i * 82 + drift, LOGICAL_W, 24);
+          }
+
+          const zoom = lerp(0.95, 1.11, easeOutCubic(lt / 0.75));
+          c.save();
+          c.translate(LOGICAL_W * 0.5, LOGICAL_H * 0.52);
+          c.scale(zoom, zoom);
+
+          c.fillStyle = "#10131e";
+          c.fillRect(-740, 120, 1480, 220);
+
+          drawRoundedRect(c, -264, -116, 528, 236, 24);
+          c.fillStyle = "#121622";
+          c.fill();
+          c.strokeStyle = "#242c42";
+          c.lineWidth = 4;
+          c.stroke();
+
+          drawRoundedRect(c, -234, -86, 468, 176, 14);
+          c.fillStyle = "#080a12";
+          c.fill();
+
+          const timeFrac = easeOutCubic(invLerp(0.04, 0.56, lt));
+          const totalMins = Math.round(lerp(0, 224, timeFrac)); // 11:30 PM + 224m = 3:14 AM
+          let hh = 11 + Math.floor((30 + totalMins) / 60);
+          const mm = (30 + totalMins) % 60;
+          const isAM = hh >= 12;
+          if (hh > 12) hh -= 12;
+          const timeStr = `${hh}:${String(mm).padStart(2, "0")}`;
+
+          const isFinal = lt > 0.52;
+          const digitCol = isFinal ? "#ff495c" : "#ff6b57";
+          drawSoftGlow(c, 0, 5, 255, isFinal ? "rgba(255, 52, 74, 0.28)" : "rgba(255, 100, 75, 0.16)");
+
+          c.fillStyle = digitCol;
+          c.font = "700 128px 'Courier New', monospace";
+          c.textAlign = "center";
+          c.textBaseline = "middle";
+          c.shadowColor = digitCol;
+          c.shadowBlur = 24;
+          c.fillText(timeStr, -14, 8);
+          c.shadowBlur = 0;
+
+          c.font = "600 22px -apple-system, sans-serif";
+          c.fillStyle = "rgba(255, 120, 110, 0.85)";
+          c.fillText(isAM ? "AM" : "PM", 188, 34);
+          c.restore();
+          return;
+        }
+
+        // BEAT B: Macro Close-Up of Pinched/Kinked Tubing + Crimson OCCLUSION Alarm (0.75..1.95s)
+        if (lt < 1.95) {
+          const st = lt - 0.75; // 0..1.20s
+          const kinkProgress = smoothstep(invLerp(0.05, 0.34, st));
+          const alarmTriggered = st >= 0.28;
+          const alarmPulse = alarmTriggered ? (0.55 + 0.45 * Math.sin((st - 0.28) * 18.0)) : 0;
+
+          const bg = c.createLinearGradient(0, 0, 0, LOGICAL_H);
+          bg.addColorStop(0, "#0b1122");
+          bg.addColorStop(1, "#18223d");
+          c.fillStyle = bg;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+          // Folded blanket creases
+          c.fillStyle = "rgba(38, 52, 88, 0.46)";
+          c.beginPath();
+          c.moveTo(0, 265);
+          c.bezierCurveTo(380, 175, 790, 395, LOGICAL_W, 245);
+          c.lineTo(LOGICAL_W, LOGICAL_H);
+          c.lineTo(0, LOGICAL_H);
+          c.closePath();
+          c.fill();
+
+          const zoom = lerp(1.0, 1.13, easeInOutSine(st / 1.20));
+          c.save();
+          c.translate(LOGICAL_W * 0.5, LOGICAL_H * 0.5);
+          c.scale(zoom, zoom);
+          c.translate(-LOGICAL_W * 0.5, -LOGICAL_H * 0.5);
+
+          // Pinched/kinked thin translucent infusion tubing
+          const pinchX = 885;
+          const pinchY = lerp(296, 324, kinkProgress);
+          const foldShift = kinkProgress * 56;
+
+          c.save();
+          c.lineCap = "round";
+          c.lineJoin = "round";
+          c.strokeStyle = alarmTriggered
+            ? `rgba(255, 165, 175, ${0.70 + 0.25 * alarmPulse})`
+            : "rgba(195, 224, 255, 0.74)";
+          c.lineWidth = 10;
+          c.beginPath();
+          c.moveTo(585, 302);
+          c.bezierCurveTo(690, 280, 770, 360, pinchX - foldShift * 0.15, pinchY);
+          c.lineTo(pinchX + foldShift * 0.2, pinchY - foldShift * 0.44);
+          c.bezierCurveTo(995, 254, 1140, 396, 1365, 350);
+          c.stroke();
+
+          c.strokeStyle = "rgba(255,255,255,0.48)";
+          c.lineWidth = 3;
+          c.stroke();
+
+          if (kinkProgress > 0.42) {
+            const ka = invLerp(0.42, 1.0, kinkProgress);
+            drawSoftGlow(c, pinchX + 4, pinchY - 8, 54 + 18 * alarmPulse, `rgba(255, 58, 76, ${0.55 * ka})`);
+            c.strokeStyle = `rgba(255, 92, 108, ${0.90 * ka})`;
+            c.lineWidth = 2.6;
+            c.beginPath();
+            c.arc(pinchX + 4, pinchY - 8, 22 + 12 * alarmPulse, 0, Math.PI * 2);
+            c.stroke();
+          }
+          c.restore();
+
+          // Detailed Insulin Pump Macro Close-Up
+          c.save();
+          c.translate(465, 308);
+          c.rotate(-0.08);
+
+          if (alarmTriggered) {
+            c.save();
+            c.globalCompositeOperation = "screen";
+            drawSoftGlow(c, 0, 0, 340 + 68 * alarmPulse, `rgba(255, 34, 60, ${0.48 * alarmPulse})`);
+            c.restore();
+          }
+
+          drawRoundedRect(c, -112, -162, 228, 332, 34);
+          c.fillStyle = "rgba(0,0,0,0.55)";
+          c.fill();
+
+          drawRoundedRect(c, -116, -168, 228, 332, 34);
+          c.fillStyle = "#19202e";
+          c.fill();
+          c.strokeStyle = alarmTriggered ? "#8f2c3a" : "#3a4864";
+          c.lineWidth = 4;
+          c.stroke();
+
+          // Tubing cartridge port
+          drawRoundedRect(c, 84, -34, 34, 42, 8);
+          c.fillStyle = "#2d384f";
+          c.fill();
+
+          // Pump Screen
+          drawRoundedRect(c, -88, -132, 172, 168, 14);
+          if (alarmTriggered) {
+            c.fillStyle = alarmPulse > 0.45 ? "#dc1d36" : "#781020";
+            c.fill();
+
+            // Warning triangle
+            c.fillStyle = "#ffffff";
+            c.beginPath();
+            c.moveTo(-2, -110);
+            c.lineTo(28, -58);
+            c.lineTo(-32, -58);
+            c.closePath();
+            c.fill();
+
+            c.fillStyle = "#b81227";
+            c.font = "900 32px sans-serif";
+            c.textAlign = "center";
+            c.fillText("!", -2, -67);
+
+            c.fillStyle = "#ffffff";
+            c.font = "800 22px -apple-system, sans-serif";
+            c.fillText("OCCLUSION", -2, -22);
+            c.font = "700 14px -apple-system, sans-serif";
+            c.fillStyle = "rgba(255,235,238,0.95)";
+            c.fillText("NO DELIVERY", -2, 3);
+            c.font = "600 12px monospace";
+            c.fillText("CHECK TUBING", -2, 23);
+          } else {
+            c.fillStyle = "#12263f";
+            c.fill();
+            c.fillStyle = "#7cb8ff";
+            c.font = "600 14px monospace";
+            c.textAlign = "center";
+            c.fillText("BASAL ACTIVE", -2, -88);
+            c.fillStyle = "#d8ebff";
+            c.font = "700 34px sans-serif";
+            c.fillText("0.75 u/h", -2, -38);
+            c.fillStyle = "#6ca4e8";
+            c.font = "500 13px sans-serif";
+            c.fillText("3:14 AM", -2, 8);
+          }
+
+          c.fillStyle = "#2b354b";
+          c.beginPath();
+          c.arc(-44, 86, 16, 0, Math.PI * 2);
+          c.arc(40, 86, 16, 0, Math.PI * 2);
+          c.arc(-2, 122, 18, 0, Math.PI * 2);
+          c.fill();
+
+          c.fillStyle = alarmTriggered ? "#ff2e47" : "#5ca8ff";
+          c.beginPath();
+          c.arc(68, -148, 7, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+
+          c.restore();
+          return;
+        }
+
+        // BEAT C: Warning Crimson Light across Sleeping Face + CGM Spiking to "385 ↑↑" (1.95..2.80s)
+        const ct = lt - 1.95; // 0..0.85s
+        const pulse = 0.5 + 0.5 * Math.sin(ct * 17.0);
+
+        c.fillStyle = "#080c18";
+        c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+        c.fillStyle = "#1a2238";
+        drawRoundedRect(c, 225, 148, 775, 386, 95);
+        c.fill();
+
+        c.save();
+        c.translate(652 + Math.sin(ct * 5.2) * 4, 320);
+
+        c.fillStyle = "#14111a";
+        c.beginPath();
+        c.ellipse(-25, 0, 178, 132, -0.06, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = "#a2a6bc";
+        c.beginPath();
+        c.ellipse(25, 10, 120, 105, 0.05, 0, Math.PI * 2);
+        c.fill();
+
+        // Tightly furrowed sleeping eyes & brows
+        c.strokeStyle = "#1d1824";
+        c.lineWidth = 4.5;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(-25, -4); c.quadraticCurveTo(-4, 12, 16, -2);
+        c.moveTo(54, -2); c.quadraticCurveTo(74, 12, 94, -4);
+        c.stroke();
+
+        c.beginPath();
+        c.moveTo(-22, -26); c.lineTo(14, -18);
+        c.moveTo(92, -26); c.lineTo(56, -18);
+        c.stroke();
+
+        c.strokeStyle = "#5c4a5c";
+        c.lineWidth = 3.8;
+        c.beginPath();
+        c.moveTo(14, 58); c.quadraticCurveTo(36, 48, 56, 58);
+        c.stroke();
+        c.restore();
+
+        // Flashing warning crimson glow across her sleeping face
+        c.save();
+        c.globalCompositeOperation = "screen";
+        drawSoftGlow(c, 265, 365, 700, `rgba(255, 28, 56, ${0.24 + 0.46 * pulse})`);
+        c.restore();
+
+        const glucoseVal = Math.round(lerp(346, 385, smoothstep(ct / 0.68)));
+        drawGlucoseCard(c, 1020, 118, `${glucoseVal} ↑↑`, "mg/dL HIGH", "#ff475a", 0.98, true);
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 4 (17.8s – 21.0s): KETONES & EMERGENCY RUSH
+         - 0.00..1.50s: Dizzy pale morning light, subtle camera sway, flashing
+                        ketone meter inset ("4.8 mmol/L — HIGH"), 19yo bursts in.
+         - 1.50..2.45s: Rain-streaked ambulance glass in sweeping red & blue sirens.
+         - 2.45..3.20s: Stretcher POV rushing ER corridor fluorescent lights.
+         ------------------------------------------------------------------------ */
+      function renderScene4(c, t) {
+        const lt = t - 17.8; // 0..3.2s
+
+        // BEAT A: Pale dizzy morning + Ketones "4.8 mmol/L — HIGH" + 19yo bursts in (0.00..1.50s)
+        if (lt < 1.50) {
+          const dizzySway = Math.sin(lt * 6.5) * 0.019;
+          const trembleX = Math.sin(lt * 34) * 2.2;
+
+          c.save();
+          const dZoom = 1.05 + Math.sin(lt * 5.2) * 0.022;
+          c.translate(LOGICAL_W * 0.5, LOGICAL_H * 0.5);
+          c.rotate(dizzySway);
+          c.scale(dZoom, dZoom);
+          c.translate(-LOGICAL_W * 0.5, -LOGICAL_H * 0.5);
+
+          drawBedroomBackdrop(c, "sickDawn", 0, false);
+
+          c.fillStyle = "rgba(115, 142, 136, 0.15)";
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+          // Bedroom door bursts open at lt = 0.78s (t = 18.58s)
+          const doorOpen = easeOutCubic(invLerp(0.75, 1.04, lt));
+          if (doorOpen > 0.01) {
+            c.fillStyle = "#b8c8cd";
+            c.fillRect(1175, 90, 174 * doorOpen, 362);
+          }
+
+          // 12yo trembling & pale in bed
+          drawYoungerSister(c, 730 + trembleX, 390, {
+            scale: 1.02,
+            breath: Math.sin(t * 6.8) * 2.1,
+            headTilt: 0.22,
+            expression: "sick",
+            clutchingStomach: true,
+            paleFactor: 0.94,
+            sweat: 1.0,
+            pumpStatus: "alarm"
+          });
+
+          // 19yo bursts into the room rushing urgently to her sister's side
+          if (lt >= 0.78) {
+            const rushT = easeOutCubic(invLerp(0.78, 1.40, lt));
+            const sx = lerp(1175, 862, rushT);
+            const sy = lerp(358, 408, rushT);
+            drawOlderSister(c, sx, sy, {
+              scale: 1.02,
+              breath: Math.sin(t * 6.0),
+              headTilt: -0.18,
+              expression: "worried",
+              armReach: 0,
+              lightTint: "rgba(200, 225, 225, 0.2)"
+            });
+            // Reaching out toward her little sister
+            c.strokeStyle = "#48595b";
+            c.lineWidth = 26;
+            c.lineCap = "round";
+            c.beginPath();
+            c.moveTo(sx - 34, sy - 42);
+            c.quadraticCurveTo(sx - 78, sy - 30, lerp(sx - 80, 766, rushT), lerp(sy - 14, 368, rushT));
+            c.stroke();
+          }
+          c.restore();
+
+          // Flashing Ketone Meter Inset ("4.8 mmol/L — HIGH")
+          const meterAlpha = smoothstep(invLerp(0.10, 0.28, lt)) * (1 - smoothstep(invLerp(1.32, 1.48, lt)));
+          if (meterAlpha > 0.01) {
+            drawKetoneMeterInset(c, 1002, 112, meterAlpha, lt * 2.1);
+          }
+
+          drawVignette(c, 0.68 + 0.08 * Math.sin(lt * 7.5), "12, 18, 18");
+          return;
+        }
+
+        // BEAT B: Rain-Streaked Ambulance Glass in Sweeping Red & Blue Sirens (1.50..2.45s)
+        if (lt < 2.45) {
+          const st = lt - 1.50; // 0..0.95s
+          c.fillStyle = "#060810";
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+          const strobe = Math.sin(st * 18.5);
+          const redAlpha = Math.max(0, strobe) * 0.72;
+          const blueAlpha = Math.max(0, -strobe) * 0.72;
+
+          c.save();
+          c.globalCompositeOperation = "screen";
+          drawSoftGlow(c, LOGICAL_W * 0.24 + Math.sin(st * 7.2) * 145, LOGICAL_H * 0.4, 640, `rgba(255, 32, 54, ${redAlpha})`);
+          drawSoftGlow(c, LOGICAL_W * 0.76 + Math.cos(st * 7.2) * 145, LOGICAL_H * 0.46, 640, `rgba(42, 130, 255, ${blueAlpha})`);
+          c.restore();
+
+          // Passing blurred city streetlights
+          for (let i = 0; i < 6; i++) {
+            const lx = ((LOGICAL_W - ((st * 1180 + i * 290) % (LOGICAL_W + 420))) + 150);
+            drawSoftGlow(c, lx, 244 + (i % 3) * 56, 98, "rgba(255, 220, 155, 0.24)");
+          }
+
+          // Expressive interior silhouettes inside ambulance
+          c.fillStyle = "rgba(8, 10, 16, 0.78)";
+          c.beginPath();
+          c.ellipse(540, 448, 134, 184, 0.1, 0, Math.PI * 2);
+          c.ellipse(775, 488, 114, 154, -0.2, 0, Math.PI * 2);
+          c.fill();
+
+          // Rain streaks sliding diagonally down glass
+          c.save();
+          for (const r of raindrops) {
+            const ry = (r.y + st * r.speed * 1.48) % (LOGICAL_H + 60) - 30;
+            const rx = (r.x - st * 245 + LOGICAL_W * 4) % LOGICAL_W;
+            const isRed = strobe > 0;
+            c.strokeStyle = isRed ? "rgba(255, 168, 178, 0.60)" : "rgba(168, 214, 255, 0.60)";
+            c.lineWidth = r.r * 0.72;
+            c.beginPath();
+            c.moveTo(rx, ry);
+            c.lineTo(rx - r.len * 0.45, ry + r.len);
+            c.stroke();
+            c.fillStyle = "rgba(242, 249, 255, 0.54)";
+            c.beginPath();
+            c.arc(rx - r.len * 0.45, ry + r.len, r.r * 0.75, 0, Math.PI * 2);
+            c.fill();
+          }
+          c.restore();
+          drawVignette(c, 0.62);
+          return;
+        }
+
+        // BEAT C: Rushing Stretcher POV — ER Corridor Overhead Fluorescent Lights (2.45..3.20s)
+        const ct = lt - 2.45; // 0..0.75s
+        c.fillStyle = "#c8d6dd";
+        c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+        const cx = LOGICAL_W * 0.5 + Math.sin(ct * 16) * 16;
+        const cy = LOGICAL_H * 0.18 + Math.cos(ct * 18) * 9;
+
+        // Perspective corridor side walls
+        c.fillStyle = "#8ea0ab";
+        c.beginPath();
+        c.moveTo(0, 0); c.lineTo(cx - 122, cy); c.lineTo(cx - 122, LOGICAL_H); c.lineTo(0, LOGICAL_H);
+        c.closePath();
+        c.fill();
+
+        c.beginPath();
+        c.moveTo(LOGICAL_W, 0); c.lineTo(cx + 122, cy); c.lineTo(cx + 122, LOGICAL_H); c.lineTo(LOGICAL_W, LOGICAL_H);
+        c.closePath();
+        c.fill();
+
+        // Streaking overhead fluorescent fixtures
+        for (let i = 0; i < 7; i++) {
+          const z = ((i / 7) + ct * 2.55) % 1.0;
+          const p = z * z * z;
+          const y = lerp(cy + 15, LOGICAL_H + 145, p);
+          const w = lerp(92, 980, p);
+          const h = lerp(10, 148, p);
+
+          drawSoftGlow(c, cx, y, w * 0.65, `rgba(255, 255, 255, ${0.48 * p})`);
+          c.fillStyle = "#ffffff";
+          drawRoundedRect(c, cx - w * 0.5, y - h * 0.5, w, h, 8 * p + 2);
+          c.fill();
+        }
+
+        // Clinical white flash transition into hospital room
+        if (ct > 0.50) {
+          const flash = smoothstep((ct - 0.50) / 0.25);
+          c.fillStyle = `rgba(235, 245, 250, ${flash})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+      }
+
+      /* ------------------------------------------------------------------------
+         LIVE SCROLLING GREEN ECG HEART MONITOR ("HR 108") — SCENE 5
+         ------------------------------------------------------------------------ */
+      function drawECGMonitor(c, x, y, t) {
+        c.save();
+        c.translate(x, y);
+
+        drawRoundedRect(c, 0, 0, 266, 166, 14);
+        c.fillStyle = "#18212b";
+        c.fill();
+        c.strokeStyle = "#4d5e6d";
+        c.lineWidth = 3;
+        c.stroke();
+
+        drawRoundedRect(c, 12, 12, 242, 142, 8);
+        c.fillStyle = "#071217";
+        c.fill();
+
+        // Fine clinical grid
+        c.strokeStyle = "rgba(65, 212, 156, 0.08)";
+        c.lineWidth = 1;
+        for (let gx = 32; gx < 246; gx += 24) {
+          c.beginPath(); c.moveTo(gx, 14); c.lineTo(gx, 152); c.stroke();
+        }
+        for (let gy = 34; gy < 148; gy += 24) {
+          c.beginPath(); c.moveTo(14, gy); c.lineTo(250, gy); c.stroke();
+        }
+
+        // Live scrolling green ECG waveform
+        const sweepWidth = 168;
+        const headPos = (t * 82) % sweepWidth;
+        c.strokeStyle = "#4dffb8";
+        c.lineWidth = 2.4;
+        c.shadowColor = "#38f5a8";
+        c.shadowBlur = 8;
+        c.beginPath();
+        for (let i = 0; i < sweepWidth; i += 2) {
+          const distAhead = (i - headPos + sweepWidth) % sweepWidth;
+          if (distAhead < 14) continue;
+
+          const phase = (i / 56) % 1;
+          let dy = 0;
+          if (phase > 0.18 && phase < 0.24) dy = -5;
+          else if (phase >= 0.28 && phase < 0.31) dy = 6;
+          else if (phase >= 0.31 && phase < 0.35) dy = -30;
+          else if (phase >= 0.35 && phase < 0.39) dy = 12;
+          else if (phase >= 0.50 && phase < 0.62) dy = -8 * Math.sin(((phase - 0.50) / 0.12) * Math.PI);
+
+          const px = 20 + i;
+          const py = 76 + dy;
+          if (i === 0 || distAhead === 14 || distAhead === 15) c.moveTo(px, py);
+          else c.lineTo(px, py);
+        }
+        c.stroke();
+
+        c.fillStyle = "#dcfff2";
+        c.beginPath();
+        c.arc(20 + headPos, 76, 3.2, 0, Math.PI * 2);
+        c.fill();
+        c.shadowBlur = 0;
+
+        // Vitals readout: HR 108 & SpO2 99%
+        c.fillStyle = "#4dffb8";
+        c.font = "700 11px monospace";
+        c.fillText("HR", 198, 36);
+        c.font = "700 28px monospace";
+        c.fillText("108", 192, 65);
+
+        c.fillStyle = "#69c8ff";
+        c.font = "700 11px monospace";
+        c.fillText("SpO2", 198, 100);
+        c.font = "700 22px monospace";
+        c.fillText("99%", 194, 125);
+
+        c.restore();
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 5 (21.0s – 23.8s): THREE DAYS IN HOSPITAL
+         Sterile hospital bay: IV drip with falling drops, live green ECG monitor
+         ("HR 108"), 12yo resting in bed, 19yo holding her hand, and diagonal
+         window light shifting rapidly across 3 cycles of morning, afternoon & dusk.
+         ------------------------------------------------------------------------ */
+      function renderScene5(c, t) {
+        const et = t - 21.0; // 0..2.8s
+        c.save();
+        const zoom = lerp(1.0, 1.06, easeInOutSine(et / 2.8));
+        c.translate(LOGICAL_W * 0.5, LOGICAL_H * 0.5);
+        c.scale(zoom, zoom);
+        c.translate(-LOGICAL_W * 0.5, -LOGICAL_H * 0.5);
+
+        // Sterile hospital wall & floor
+        const wg = c.createLinearGradient(0, 0, 0, LOGICAL_H);
+        wg.addColorStop(0, "#cfdbe1");
+        wg.addColorStop(0.75, "#b7c7cf");
+        wg.addColorStop(1, "#98aab4");
+        c.fillStyle = wg;
+        c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+        // Three rapid cycles of morning -> afternoon -> dusk light passing across wall
+        const cyclePhase = (et / 2.8) * 3.0; // exactly 3 full day cycles
+        const dayFrac = cyclePhase % 1.0;
+        const sunAngleShift = lerp(-120, 620, dayFrac);
+        let beamColor;
+        if (dayFrac < 0.35) {
+          // Morning warm gold
+          beamColor = `rgba(255, 224, 174, ${(0.28 * Math.sin((dayFrac / 0.35) * Math.PI)).toFixed(3)})`;
+        } else if (dayFrac < 0.72) {
+          // Crisp bright afternoon white-amber
+          beamColor = `rgba(255, 246, 225, ${(0.26 * Math.sin(((dayFrac - 0.35) / 0.37) * Math.PI)).toFixed(3)})`;
+        } else {
+          // Cool twilight dusk
+          beamColor = `rgba(74, 108, 165, ${(0.28 * Math.sin(((dayFrac - 0.72) / 0.28) * Math.PI)).toFixed(3)})`;
+        }
+
+        c.save();
+        c.fillStyle = beamColor;
+        c.beginPath();
+        c.moveTo(220 + sunAngleShift, 0);
+        c.lineTo(440 + sunAngleShift, 0);
+        c.lineTo(680 + sunAngleShift, LOGICAL_H);
+        c.lineTo(420 + sunAngleShift, LOGICAL_H);
+        c.closePath();
+        c.fill();
+        c.restore();
+
+        // Privacy curtain on far left
+        c.fillStyle = "#a4b8c2";
+        c.fillRect(0, 0, 220, 520);
+        c.strokeStyle = "rgba(255,255,255,0.28)";
+        c.lineWidth = 3;
+        for (let x = 26; x < 216; x += 32) {
+          c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 520); c.stroke();
+        }
+
+        // Overhead clinical fluorescent glow
+        c.save();
+        c.globalCompositeOperation = "screen";
+        drawSoftGlow(c, 705, 42, 550, "rgba(235, 248, 255, 0.52)");
+        c.restore();
+
+        // Wall-mounted ECG Monitor ("HR 108")
+        drawECGMonitor(c, 940, 104, t);
+
+        // IV Pole, Hanging Saline/Insulin Drip Bag & Falling Drops
+        c.strokeStyle = "#7a8c96";
+        c.lineWidth = 7;
+        c.beginPath();
+        c.moveTo(400, 96); c.lineTo(400, 550);
+        c.moveTo(362, 110); c.lineTo(436, 110);
+        c.stroke();
+
+        drawRoundedRect(c, 376, 120, 48, 86, 12);
+        c.fillStyle = "rgba(225, 245, 255, 0.74)";
+        c.fill();
+        c.strokeStyle = "#8aa4b2";
+        c.lineWidth = 2;
+        c.stroke();
+        c.fillStyle = "rgba(180, 225, 246, 0.68)";
+        c.fillRect(380, 150, 40, 48);
+
+        // Drip chamber & falling IV drop
+        drawRoundedRect(c, 393, 208, 14, 34, 5);
+        c.fillStyle = "rgba(235, 248, 255, 0.86)";
+        c.fill();
+        const dropY = 212 + ((t * 42) % 24);
+        c.fillStyle = "#ffffff";
+        c.beginPath();
+        c.arc(400, dropY, 2.5, 0, Math.PI * 2);
+        c.fill();
+
+        drawTubing(c, 400, 242, 406, 382, 520, 412, 664, 405, 0.78, 2.6, "230, 246, 255");
+
+        // Hospital Bed
+        c.fillStyle = "#7c8d99";
+        drawRoundedRect(c, 460, 414, 498, 120, 12);
+        c.fill();
+        c.fillStyle = "#e6eef2";
+        drawRoundedRect(c, 475, 368, 468, 76, 18);
+        c.fill();
+        c.fillStyle = "#f2f7fa";
+        drawRoundedRect(c, 480, 328, 132, 52, 22);
+        c.fill();
+
+        // 12yo resting in hospital bed
+        const breath = Math.sin(t * 2.0) * 1.8;
+        c.fillStyle = "#d3e0e8";
+        c.beginPath();
+        c.moveTo(586, 370);
+        c.quadraticCurveTo(720, 332 + breath, 902, 368);
+        c.lineTo(912, 434);
+        c.lineTo(566, 434);
+        c.closePath();
+        c.fill();
+
+        c.save();
+        c.translate(556, 350);
+        c.fillStyle = "#2b2326";
+        c.beginPath();
+        c.ellipse(-8, 4, 34, 24, -0.1, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#dad2ce";
+        c.beginPath();
+        c.ellipse(6, 2, 24, 20, 0, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#3a3238";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(2, 2, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+        c.stroke();
+        c.beginPath();
+        c.arc(15, 3, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+        c.stroke();
+        c.restore();
+
+        // Safety bedrail
+        c.strokeStyle = "rgba(120, 138, 150, 0.56)";
+        c.lineWidth = 6;
+        drawRoundedRect(c, 532, 392, 296, 50, 14);
+        c.stroke();
+
+        // 19yo seated beside bed faithfully holding her little sister's hand
+        c.save();
+        c.translate(788, 448);
+        c.fillStyle = "#4d5d6b";
+        drawRoundedRect(c, 32, -25, 22, 130, 6);
+        c.fill();
+        c.fillStyle = "#48595b";
+        c.beginPath();
+        c.moveTo(-42, -52);
+        c.quadraticCurveTo(8, -76, 46, -24);
+        c.lineTo(42, 95);
+        c.lineTo(-34, 95);
+        c.closePath();
+        c.fill();
+        c.fillStyle = "#241b1b";
+        c.beginPath();
+        c.arc(-34, -84, 28, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.arc(-4, -98, 15, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#e2baa0";
+        c.beginPath();
+        c.ellipse(-44, -76, 18, 22, 0.35, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#4c5f61";
+        c.lineWidth = 22;
+        c.lineCap = "round";
+        c.beginPath();
+        c.moveTo(-22, -40);
+        c.quadraticCurveTo(-68, -22, -114, -40);
+        c.stroke();
+        c.fillStyle = "#e6bea4";
+        c.beginPath();
+        c.ellipse(-120, -42, 16, 11, -0.1, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        c.restore();
+
+        // Ambient dusk darkening dip during each night cycle
+        if (dayFrac >= 0.72) {
+          const duskAmt = Math.sin(((dayFrac - 0.72) / 0.28) * Math.PI);
+          c.fillStyle = `rgba(18, 32, 58, ${(0.18 * duskAmt).toFixed(3)})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+
+        // Flash-in from corridor cut & smooth fade-out at end of Scene 5
+        if (et < 0.35) {
+          c.fillStyle = `rgba(235, 245, 250, ${1 - smoothstep(et / 0.35)})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+        if (et > 2.45) {
+          c.fillStyle = `rgba(0, 0, 0, ${smoothstep((et - 2.45) / 0.35)})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 6 (23.8s – 32.8s): COMING HOME & THE SISTER HUG
+         - 23.8s – 29.4s (lt: 0.0 – 5.6s): Cold twilight-blue bedroom. 12yo curls
+           up crying alone on her bed with animated glistening teardrops, while
+           her cool-blue insulin pump pulses steadily on the nightstand.
+         - 29.4s – 32.8s (lt: 5.6 – 9.0s): NO CAPTIONS. Bedroom door slowly opens
+           casting a warm golden wedge of hallway light across the cold blue room;
+           19yo sits beside her on the bed, and the 12yo leans in and hugs her
+           older sister tightly in a tender, protective embrace.
+         ------------------------------------------------------------------------ */
+      function renderScene6(c, t) {
+        const lt = t - 23.8; // 0..9.0s
+
+        // PART A (23.8s – 29.4s): Curled up crying alone in cold twilight-blue bedroom
+        if (lt < 5.6) {
+          const duskProgress = smoothstep(lt / 5.6);
+          const pushIn = lerp(1.0, 1.18, easeInOutSine(lt / 5.6));
+
+          const bg = c.createLinearGradient(0, 0, 0, LOGICAL_H);
+          bg.addColorStop(0, "#070b17");
+          bg.addColorStop(1, "#121a30");
+          c.fillStyle = bg;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+          c.save();
+          c.translate(LOGICAL_W * 0.54, LOGICAL_H * 0.52);
+          c.scale(pushIn, pushIn);
+          c.translate(-LOGICAL_W * 0.54, -LOGICAL_H * 0.52);
+
+          // Cold twilight blind slats
+          c.fillStyle = `rgba(115, 155, 228, ${lerp(0.11, 0.06, duskProgress)})`;
+          for (let i = 0; i < 5; i++) {
+            c.beginPath();
+            c.moveTo(140, 62 + i * 52);
+            c.lineTo(735, 158 + i * 52);
+            c.lineTo(735, 175 + i * 52);
+            c.lineTo(140, 79 + i * 52);
+            c.closePath();
+            c.fill();
+          }
+
+          // Bed headboard & pillow
+          c.fillStyle = "#111626";
+          drawRoundedRect(c, 368, 158, 776, 428, 18);
+          c.fill();
+
+          c.fillStyle = "#2b3754";
+          drawRoundedRect(c, 510, 236, 266, 158, 58);
+          c.fill();
+
+          // Damp tear stain spreading softly on pillow
+          const stainAlpha = smoothstep(invLerp(0.8, 4.5, lt)) * 0.35;
+          if (stainAlpha > 0.01) {
+            c.fillStyle = `rgba(14, 22, 42, ${stainAlpha})`;
+            c.beginPath();
+            c.ellipse(680, 354, 23, 11, 0.12, 0, Math.PI * 2);
+            c.ellipse(658, 362, 13, 6, -0.1, 0, Math.PI * 2);
+            c.fill();
+          }
+
+          const sobCycle = (lt * 0.85) % 1.0;
+          const sobHitch = Math.sin(sobCycle * Math.PI * 2) * Math.exp(-sobCycle * 3.5) * 3.8;
+          const microTremble = Math.sin(lt * 16) * 0.65 * smoothstep(invLerp(0.4, 1.5, lt));
+
+          // Curled-up blanket mound
+          c.save();
+          c.translate(0, sobHitch + microTremble);
+          c.fillStyle = "#23304f";
+          c.beginPath();
+          c.moveTo(652, 320);
+          c.bezierCurveTo(770, 232, 985, 250, 1088, 370);
+          c.lineTo(1104, 570);
+          c.lineTo(536, 570);
+          c.quadraticCurveTo(560, 402, 652, 320);
+          c.closePath();
+          c.fill();
+
+          c.strokeStyle = "rgba(155, 194, 250, 0.18)";
+          c.lineWidth = 4;
+          c.beginPath();
+          c.moveTo(658, 319);
+          c.bezierCurveTo(770, 236, 974, 252, 1074, 360);
+          c.stroke();
+
+          // Small hand clutching duvet edge
+          c.fillStyle = "#a5adc6";
+          c.beginPath();
+          c.ellipse(696, 336, 15, 10, -0.35, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+
+          // 12yo face resting on pillow, crying with animated glistening teardrops
+          c.save();
+          c.translate(644, 310 + sobHitch * 0.45);
+          c.rotate(-0.12);
+
+          c.fillStyle = "#161422";
+          c.beginPath();
+          c.ellipse(-16, -2, 70, 53, -0.1, 0, Math.PI * 2);
+          c.fill();
+
+          c.fillStyle = "#9da8c4";
+          c.beginPath();
+          c.ellipse(12, 4, 49, 43, 0.05, 0, Math.PI * 2);
+          c.fill();
+
+          c.fillStyle = "#161422";
+          c.beginPath();
+          c.moveTo(-30, -24);
+          c.quadraticCurveTo(6, -46, 53, -16);
+          c.quadraticCurveTo(22, -26, -8, -14);
+          c.closePath();
+          c.fill();
+
+          // Tightly shut tearful eyes & brows
+          c.strokeStyle = "#1d1b2b";
+          c.lineWidth = 2.8;
+          c.lineCap = "round";
+          c.beginPath();
+          c.moveTo(-4, 2); c.quadraticCurveTo(6, 8, 16, 3);
+          c.moveTo(28, 3); c.quadraticCurveTo(37, 8, 46, 2);
+          c.stroke();
+
+          c.lineWidth = 2.3;
+          c.beginPath();
+          c.moveTo(-4, -10); c.lineTo(14, -15);
+          c.moveTo(28, -15); c.lineTo(44, -10);
+          c.stroke();
+
+          // Animated glistening teardrops rolling down cheek onto pillow
+          const tearBuild = smoothstep(invLerp(0.25, 1.0, lt));
+          if (tearBuild > 0.01) {
+            c.fillStyle = `rgba(210, 238, 255, ${0.86 * tearBuild})`;
+            c.beginPath();
+            c.ellipse(13, 6.5, 5.6, 2.5, 0.15, 0, Math.PI * 2);
+            c.ellipse(34, 6.5, 4.6, 2.2, -0.1, 0, Math.PI * 2);
+            c.fill();
+
+            for (let d = 0; d < 2; d++) {
+              const cycle = (lt - 0.35 - d * 1.1) / 2.1;
+              if (cycle > 0) {
+                const frac = cycle % 1.0;
+                const tx = lerp(14 + d * 18, 22 + d * 8, frac);
+                const ty = lerp(8, 48, easeInOutSine(frac));
+                const ta = (1 - smoothstep(invLerp(0.82, 1.0, frac))) * smoothstep(invLerp(0, 0.15, frac));
+                c.fillStyle = `rgba(220, 242, 255, ${0.94 * ta})`;
+                c.beginPath();
+                c.ellipse(tx, ty, 2.6, 4.2, 0.15, 0, Math.PI * 2);
+                c.fill();
+                c.fillStyle = `rgba(255, 255, 255, ${0.96 * ta})`;
+                c.beginPath();
+                c.arc(tx - 0.6, ty - 1.1, 0.9, 0, Math.PI * 2);
+                c.fill();
+              }
+            }
+          }
+
+          c.strokeStyle = "#565a78";
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.moveTo(14, 24);
+          c.quadraticCurveTo(22, 21 + microTremble * 0.6, 30, 25);
+          c.stroke();
+          c.restore();
+
+          // Nightstand on left with steady cool-blue pulsing insulin pump
+          c.fillStyle = "#0b0f1c";
+          drawRoundedRect(c, 168, 374, 224, 236, 10);
+          c.fill();
+
+          const pumpLedPulse = 0.48 + 0.52 * (0.5 + 0.5 * Math.sin(t * 2.4));
+          c.save();
+          c.globalCompositeOperation = "screen";
+          drawSoftGlow(c, 320, 360, 170 * pumpLedPulse, `rgba(78, 152, 255, ${0.30 * pumpLedPulse})`);
+          c.restore();
+
+          drawMiniPump(c, 320, 360, 0.78, `rgba(65, 145, 255, ${0.42 + 0.36 * pumpLedPulse})`, "#80c4ff", pumpLedPulse);
+          drawTubing(c, 342, 358, 438, 422, 526, 402, 600, 382, 0.44, 2.2, "155, 198, 255");
+
+          drawDust(c, t, "rgba(155, 190, 245, ");
+          c.restore();
+
+          drawVignette(c, 0.66, "4, 6, 14");
+
+          if (lt < 0.45) {
+            c.fillStyle = `rgba(0,0,0,${1 - smoothstep(lt / 0.45)})`;
+            c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+          }
+          if (lt > 5.36) {
+            c.fillStyle = `rgba(6, 9, 18, ${smoothstep((lt - 5.36) / 0.24) * 0.52})`;
+            c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+          }
+          return;
+        }
+
+        // PART B (29.4s – 32.8s): DOOR OPENS IN GOLDEN HALLWAY LIGHT -> TENDER SISTER HUG
+        const ht = lt - 5.6; // 0..3.4s
+        const doorOpen = smoothstep(invLerp(0.0, 0.72, ht));
+        const enterProgress = easeOutCubic(invLerp(0.08, 0.92, ht));
+        const hugTight = easeInOutSine(invLerp(0.75, 1.75, ht));
+        const camZoom = lerp(1.02, 1.18, easeInOutSine(ht / 3.4));
+        const sway = Math.sin(ht * 1.55) * 1.8 * hugTight;
+
+        c.save();
+        c.translate(LOGICAL_W * 0.50, LOGICAL_H * 0.50);
+        c.scale(camZoom, camZoom);
+        c.translate(-LOGICAL_W * 0.50, -LOGICAL_H * 0.50);
+
+        // Cold twilight-blue bedroom backdrop
+        drawBedroomBackdrop(c, "twilight", 0, false);
+
+        // Deep dusk shadow over room
+        c.fillStyle = "rgba(8, 12, 26, 0.46)";
+        c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+
+        // Bedroom door slowly swings open casting a warm golden wedge of hallway light across room
+        if (doorOpen > 0.01) {
+          c.save();
+          // Open bright golden doorway
+          c.fillStyle = `rgba(255, 208, 140, ${0.46 * doorOpen})`;
+          c.fillRect(1175, 90, 82 * doorOpen, 362);
+
+          // Warm golden hallway wedge spilling across the cold blue bedroom to the sisters
+          c.globalCompositeOperation = "screen";
+          const wedge = c.createLinearGradient(1205, 220, 520, 445);
+          wedge.addColorStop(0, `rgba(255, 200, 122, ${0.50 * doorOpen})`);
+          wedge.addColorStop(0.58, `rgba(255, 186, 112, ${0.24 * doorOpen})`);
+          wedge.addColorStop(1, "rgba(255, 180, 100, 0)");
+          c.fillStyle = wedge;
+          c.beginPath();
+          c.moveTo(1175, 90);
+          c.lineTo(1258, 90);
+          c.lineTo(1258, 452);
+          c.lineTo(500, 498);
+          c.lineTo(500, 265);
+          c.closePath();
+          c.fill();
+          c.restore();
+        }
+
+        // Cool-blue insulin pump pulsing steadily on the nightstand
+        const pumpPulse = 0.55 + 0.45 * Math.sin(t * 2.2);
+        c.save();
+        c.globalCompositeOperation = "screen";
+        drawSoftGlow(c, 404, 354, 122 * pumpPulse, `rgba(78, 154, 255, ${0.30 * pumpPulse})`);
+        c.restore();
+        drawMiniPump(c, 404, 354, 0.58, `rgba(78, 158, 255, ${0.65 + 0.30 * pumpPulse})`, "#82c4ff", pumpPulse);
+        drawTubing(c, 418, 354, 495, 402, 578, 422, 660, 412, 0.52, 2.0, "165, 206, 255");
+
+        // --- THE EMBRACING SISTERS ON THE BED ---
+        const cx = 730;
+        const cy = 382;
+        const enterX = lerp(225, 0, enterProgress);
+
+        c.save();
+        c.translate(cx + sway * 0.5, cy);
+
+        // Warm golden halo enveloping both sisters from the open door
+        c.save();
+        c.globalCompositeOperation = "screen";
+        drawSoftGlow(c, 20, -56, 205, `rgba(255, 200, 132, ${0.28 * doorOpen})`);
+        c.restore();
+
+        // === 19YO OLDER SISTER (sits beside her on right, leaning left gently) ===
+        c.save();
+        c.translate(48 + enterX, 0);
+        const lean19 = lerp(-0.04, -0.14, hugTight);
+        c.rotate(lean19);
+
+        // Back hair & bun
+        c.fillStyle = "#22191a";
+        c.beginPath();
+        c.arc(34, -142, 22, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.ellipse(2, -124, 39, 43, -0.08, 0, Math.PI * 2);
+        c.fill();
+
+        // Torso (sage-slate hoodie)
+        c.fillStyle = "#48595b";
+        c.beginPath();
+        c.moveTo(-48, -76);
+        c.quadraticCurveTo(-56, 16, -48, 102);
+        c.lineTo(54, 102);
+        c.quadraticCurveTo(60, 12, 46, -76);
+        c.closePath();
+        c.fill();
+
+        // Golden hallway rim highlight along older sister's shoulder & back
+        c.strokeStyle = `rgba(255, 210, 148, ${0.58 * doorOpen})`;
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(42, -74);
+        c.quadraticCurveTo(56, 12, 50, 96);
+        c.stroke();
+
+        // Older sister's insulin pump subtly visible at hip
+        drawMiniPump(c, 36, 70, 0.46, "rgba(105, 222, 166, 0.85)", "#6effb0", 1);
+
+        // Head bowed tenderly over little sister's head
+        c.save();
+        c.translate(-6, -118);
+        c.rotate(-0.18 * hugTight);
+        c.fillStyle = "#e3b89e";
+        c.beginPath();
+        c.ellipse(-4, 0, 31, 37, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#22191a";
+        c.beginPath();
+        c.moveTo(-34, -8);
+        c.quadraticCurveTo(-24, -44, 12, -40);
+        c.quadraticCurveTo(36, -34, 30, 8);
+        c.quadraticCurveTo(10, -24, -18, -16);
+        c.closePath();
+        c.fill();
+        c.strokeStyle = "#221918";
+        c.lineWidth = 2.3;
+        c.lineCap = "round";
+        c.beginPath();
+        c.arc(-14, 2, 5.5, 0.12 * Math.PI, 0.88 * Math.PI);
+        c.stroke();
+        c.beginPath();
+        c.moveTo(-21, -8); c.lineTo(-9, -12);
+        c.stroke();
+        c.restore();
+
+        c.restore(); // end 19yo base
+
+        // === 12YO LITTLE SISTER (leans into her older sister and hugs her tightly) ===
+        c.save();
+        const slide12 = lerp(-46, -21, hugTight);
+        const lean12 = lerp(0.05, 0.25, hugTight);
+        c.translate(slide12, 18);
+        c.rotate(lean12);
+
+        // Back hair
+        c.fillStyle = "#2c2022";
+        c.beginPath();
+        c.moveTo(-34, -112);
+        c.quadraticCurveTo(-44, -64, -34, -32);
+        c.lineTo(30, -32);
+        c.quadraticCurveTo(38, -64, 28, -112);
+        c.closePath();
+        c.fill();
+
+        // Star-patterned pajamas
+        c.fillStyle = "#5f6488";
+        c.beginPath();
+        c.moveTo(-36, -62);
+        c.quadraticCurveTo(-44, 12, -38, 86);
+        c.lineTo(38, 86);
+        c.quadraticCurveTo(44, 12, 34, -62);
+        c.closePath();
+        c.fill();
+
+        c.fillStyle = "rgba(235, 232, 255, 0.34)";
+        [[-18, -28], [-12, 14], [10, 42], [-22, 52]].forEach(([sx, sy]) => {
+          c.beginPath(); c.arc(sx, sy, 2.0, 0, Math.PI * 2); c.fill();
+        });
+
+        // Head nestled safely against older sister's shoulder
+        c.save();
+        c.translate(6, -98);
+        c.rotate(0.16 * hugTight);
+        c.fillStyle = "#dab9ac";
+        c.beginPath();
+        c.ellipse(2, 0, 29, 32, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#2c2022";
+        c.beginPath();
+        c.moveTo(-30, -4);
+        c.quadraticCurveTo(-24, -38, 8, -35);
+        c.quadraticCurveTo(32, -30, 30, -2);
+        c.quadraticCurveTo(10, -20, -14, -12);
+        c.closePath();
+        c.fill();
+        c.strokeStyle = "#221a1f";
+        c.lineWidth = 2.2;
+        c.lineCap = "round";
+        c.beginPath();
+        c.arc(10, 4, 4.8, 0.1 * Math.PI, 0.9 * Math.PI);
+        c.stroke();
+        // Faint glistening tear sheen on cheek
+        c.fillStyle = "rgba(218, 240, 255, 0.65)";
+        c.beginPath();
+        c.ellipse(8, 12, 2.0, 3.2, 0.2, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        // Little sister's arms wrapping tightly around her older sister
+        c.strokeStyle = "#686e96";
+        c.lineWidth = 21;
+        c.lineCap = "round";
+        c.beginPath();
+        const armEndX = lerp(22, 94, hugTight);
+        const armEndY = lerp(14, -46, hugTight);
+        c.moveTo(-18, -36);
+        c.quadraticCurveTo(lerp(8, 44, hugTight), lerp(4, -22, hugTight), armEndX, armEndY);
+        c.stroke();
+
+        c.fillStyle = "#e0b8a4";
+        c.beginPath();
+        c.ellipse(armEndX + 4, armEndY + 1, 11, 8, -0.35, 0, Math.PI * 2);
+        c.fill();
+        c.restore(); // end 12yo
+
+        // Older sister's protective foreground arm wrapped gently around little sister's back
+        c.save();
+        c.translate(48 + enterX, 0);
+        c.strokeStyle = "#526669";
+        c.lineWidth = 25;
+        c.lineCap = "round";
+        c.beginPath();
+        const protectEndX = lerp(-26, -106, hugTight);
+        const protectEndY = lerp(28, 4, hugTight);
+        c.moveTo(14, -36);
+        c.quadraticCurveTo(lerp(-8, -48, hugTight), lerp(18, 22, hugTight), protectEndX, protectEndY);
+        c.stroke();
+
+        c.fillStyle = "#e4baa0";
+        c.beginPath();
+        c.ellipse(protectEndX - 4, protectEndY, 13, 9.5, 0.2, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+
+        c.restore(); // end embracing sisters
+
+        drawDust(c, t, "rgba(255, 224, 182, ");
+        c.restore();
+
+        drawVignette(c, 0.56, "6, 8, 16");
+
+        // Soft dissolve in & gentle fade into dark editorial cards at 32.8s
+        if (ht < 0.26) {
+          c.fillStyle = `rgba(6, 9, 18, ${(1 - smoothstep(ht / 0.26)) * 0.52})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+        if (ht > 2.82) {
+          c.fillStyle = `rgba(0, 0, 0, ${smoothstep((ht - 2.82) / 0.58)})`;
+          c.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+        }
+      }
+
+      /* ------------------------------------------------------------------------
+         SCENE 7 (32.8s – 40.0s): STARK CLOSING EDITORIAL CARDS (FULL 16:9)
+         Always visible even if bottom subtitles are toggled:
+         - 33.0s – 35.6s: "Nine and a half million people live like this."
+         - 35.8s – 37.8s: "How many are cured right now?"
+         - 37.8s – 38.6s: [complete silent dark beat]
+         - 38.6s – 40.0s: "None." (stark pure white text, holding cleanly at 40.0s)
+         ------------------------------------------------------------------------ */
+      function renderScene7(c, t) {
+        const lt = t - 32.8; // 0..7.2s
+
+        // Deep charcoal/obsidian screen
+        const bg = c.createRadialGradient(
+          FRAME_W * 0.5, FRAME_H * 0.48, 36,
+          FRAME_W * 0.5, FRAME_H * 0.5, FRAME_W * 0.62
+        );
+        bg.addColorStop(0, "#0b0d14");
+        bg.addColorStop(1, "#030407");
+        c.fillStyle = bg;
+        c.fillRect(0, 0, FRAME_W, FRAME_H);
+
+        // Subtle atmospheric dust motes fading gently into stillness
+        const dustFade = 1 - smoothstep(invLerp(4.4, 5.6, lt)) * 0.7;
+        c.save();
+        for (const m of dustMotes) {
+          const mx = ((m.x + t * m.vx * 0.4) % FRAME_W + FRAME_W) % FRAME_W;
+          const my = ((m.y * (FRAME_H / LOGICAL_H) + t * m.vy * 0.4) % FRAME_H + FRAME_H) % FRAME_H;
+          const a = m.alpha * 0.30 * dustFade * (0.65 + 0.35 * Math.sin(t * 1.1 + m.phase));
+          c.fillStyle = `rgba(182, 208, 246, ${a.toFixed(3)})`;
+          c.beginPath();
+          c.arc(mx, my, m.r, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.restore();
+
+        // Thin, subtle fading pulse/flat line across the center before "None."
+        const lineAlpha = smoothstep(invLerp(0.0, 0.55, lt)) * (1 - smoothstep(invLerp(4.8, 5.6, lt)));
+        if (lineAlpha > 0.01) {
+          c.save();
+          const lineY = FRAME_H * 0.61;
+          const ampDecay = 1 - smoothstep(invLerp(2.4, 4.9, lt));
+          c.strokeStyle = `rgba(128, 172, 236, ${(0.34 * lineAlpha).toFixed(3)})`;
+          c.lineWidth = 1.8;
+          c.beginPath();
+          for (let x = 240; x <= FRAME_W - 240; x += 3) {
+            const norm = (x - 240) / (FRAME_W - 480);
+            const edgeFade = Math.sin(norm * Math.PI);
+            const phase = ((norm * 2.5 - lt * 0.36) % 1 + 1) % 1;
+            let dy = 0;
+            if (phase > 0.44 && phase < 0.48) dy = -24 * ampDecay;
+            else if (phase >= 0.48 && phase < 0.51) dy = 9 * ampDecay;
+            else if (phase >= 0.55 && phase < 0.62) dy = -5 * ampDecay * Math.sin(((phase - 0.55) / 0.07) * Math.PI);
+            const py = lineY + dy * edgeFade;
+            if (x === 240) c.moveTo(x, py);
+            else c.lineTo(x, py);
+          }
+          c.stroke();
+          c.restore();
+        }
+
+        // Centered Editorial Typography
+        c.save();
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+
+        // 33.0s – 35.6s
+        if (t >= 33.0 && t <= 35.6) {
+          const a = smoothstep(invLerp(33.0, 33.42, t)) * (1 - smoothstep(invLerp(35.2, 35.6, t)));
+          c.globalAlpha = a;
+          c.fillStyle = "#eef2fa";
+          c.font = "400 44px Georgia, 'Palatino Linotype', serif";
+          c.fillText("Nine and a half million people live like this.", FRAME_W * 0.5, FRAME_H * 0.47);
+        }
+
+        // 35.8s – 37.8s
+        if (t >= 35.8 && t <= 37.8) {
+          const a = smoothstep(invLerp(35.8, 36.18, t)) * (1 - smoothstep(invLerp(37.42, 37.8, t)));
+          c.globalAlpha = a;
+          c.fillStyle = "#eef2fa";
+          c.font = "400 46px Georgia, 'Palatino Linotype', serif";
+          c.fillText("How many are cured right now?", FRAME_W * 0.5, FRAME_H * 0.47);
+        }
+
+        // 37.8s – 38.6s: complete silent dark beat
+
+        // 38.6s – 40.0s: Stark pure white "None." holding cleanly at 40.0s
+        if (t >= 38.6) {
+          const a = smoothstep(invLerp(38.6, 38.92, t));
+          c.globalAlpha = a;
+          c.fillStyle = "#ffffff";
+          c.font = "700 88px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+          c.shadowColor = "rgba(255, 255, 255, 0.16)";
+          c.shadowBlur = 24;
+          c.fillText("None.", FRAME_W * 0.5, FRAME_H * 0.47);
+          c.shadowBlur = 0;
+        }
+
+        c.restore();
+      }
+
+      /* ========================================================================
+         6. MAIN FRAME DISPATCHER & 16:9 LETTERBOX COMPOSITION
+         ======================================================================== */
+      function renderFilmFrame(t) {
+        ctx.save();
+        const scaleX = canvas.width / FRAME_W;
+        const scaleY = canvas.height / FRAME_H;
+        ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+        // Cinema black background & letterbox bars
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, FRAME_W, FRAME_H);
+
+        if (t >= 32.8) {
+          // Scene 7 occupies the full 16:9 dark editorial screen
+          renderScene7(ctx, t);
+        } else {
+          // Scenes 1–6 render in crisp 2.35:1 cinema letterbox framing inside 16:9
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, LETTERBOX_Y, LOGICAL_W, LOGICAL_H);
+          ctx.clip();
+          ctx.translate(0, LETTERBOX_Y);
+
+          if (t < 10.5) {
+            renderScene1(ctx, t);
+          } else if (t < 15.0) {
+            renderScene2(ctx, t);
+          } else if (t < 17.8) {
+            renderScene3(ctx, t);
+          } else if (t < 21.0) {
+            renderScene4(ctx, t);
+          } else if (t < 23.8) {
+            renderScene5(ctx, t);
+          } else {
+            renderScene6(ctx, t);
+          }
+
+          // Subtle scene cut polish on hard cuts
+          const cuts = [15.0, 17.8, 23.8];
+          for (const cutT of cuts) {
+            const dist = Math.abs(t - cutT);
+            if (dist < 0.12) {
+              const a = (1 - dist / 0.12) * 0.46;
+              ctx.fillStyle = `rgba(0,0,0,${a.toFixed(3)})`;
+              ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+            }
+          }
+
+          // Global subtle cinema lens vignette
+          drawVignette(ctx, 0.30);
+
+          // Subtle animated indie film grain overlay
+          grainFrame++;
+          if (grainFrame % 3 === 0) updateGrain();
+          ctx.globalAlpha = 0.50;
+          ctx.drawImage(grainCanvas, 0, 0, LOGICAL_W, LOGICAL_H);
+          ctx.globalAlpha = 1;
+
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      /* ========================================================================
+         7. PLAYBACK CONTROLLER, HIDPI CANVAS RESIZE & UI SYNC
+         ======================================================================== */
+      const audio = new FilmAudioEngine();
+
+      const state = {
+        started: false,
+        playing: false,
+        ended: false,
+        time: 0,
+        captionsOn: true,
+        muted: false,
+        lastTimestamp: 0,
+        dragging: false,
+        idleTimer: null
+      };
+
+      // DOM References
+      const theater = document.getElementById("theater");
+      const frameContainer = document.getElementById("frame-container");
+      const titleOverlay = document.getElementById("title-overlay");
+      const endOverlay = document.getElementById("end-overlay");
+      const btnPlayStart = document.getElementById("btn-play-start");
+      const btnWatchAgain = document.getElementById("btn-watch-again");
+      const btnPlayPause = document.getElementById("btn-play-pause");
+      const iconPlay = document.getElementById("icon-play");
+      const iconPause = document.getElementById("icon-pause");
+      const btnRestart = document.getElementById("btn-restart");
+      const btnCaptions = document.getElementById("btn-captions");
+      const btnMute = document.getElementById("btn-mute");
+      const iconVolOn = document.getElementById("icon-vol-on");
+      const iconVolOff = document.getElementById("icon-vol-off");
+      const timeReadout = document.getElementById("time-readout");
+      const sceneLabel = document.getElementById("scene-label");
+      const captionText = document.getElementById("caption-text");
+      const controlsWrapper = document.getElementById("controls-wrapper");
+      const scrubberArea = document.getElementById("scrubber-area");
+      const scrubberTrack = document.getElementById("scrubber-track");
+      const scrubberFill = document.getElementById("scrubber-fill");
+      const scrubberThumb = document.getElementById("scrubber-thumb");
+      const scrubberTooltip = document.getElementById("scrubber-tooltip");
+
+      // Inject visual scene markers onto scrubber track
+      SCENES.forEach((sc) => {
+        if (sc.start <= 0) return;
+        const mark = document.createElement("div");
+        mark.className = "scene-marker";
+        mark.style.left = `${(sc.start / FILM_DURATION) * 100}%`;
+        scrubberTrack.appendChild(mark);
+      });
+
+      function getSceneForTime(t) {
+        for (let i = SCENES.length - 1; i >= 0; i--) {
+          if (t >= SCENES[i].start) return SCENES[i];
+        }
+        return SCENES[0];
+      }
+
+      // Crisp HiDPI responsive canvas sizing
+      function resizeCanvas() {
+        const rect = frameContainer.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(2, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(2, Math.floor(rect.height * dpr));
+        renderFilmFrame(state.started ? state.time : 0.65);
+      }
+
+      function updateUI() {
+        const pct = clamp((state.time / FILM_DURATION) * 100, 0, 100);
+        scrubberFill.style.width = `${pct}%`;
+        scrubberThumb.style.left = `${pct}%`;
+        scrubberArea.setAttribute("aria-valuenow", Math.floor(state.time));
+        timeReadout.textContent = `${formatTime(state.time)} / ${formatTime(FILM_DURATION)}`;
+
+        const currentScene = getSceneForTime(state.time);
+        sceneLabel.textContent = currentScene.label;
+
+        iconPlay.style.display = state.playing ? "none" : "block";
+        iconPause.style.display = state.playing ? "block" : "none";
+
+        // Update bottom verbatim captions (Scenes 1–6 only; Scene 7 cards are always visible on canvas)
+        if (!state.captionsOn || !state.started || state.ended || state.time >= 32.8) {
+          captionText.classList.remove("visible");
+        } else {
+          const activeCap = CAPTIONS.find((c) => state.time >= c.start && state.time <= c.end);
+          if (activeCap) {
+            if (captionText.textContent !== activeCap.text) {
+              captionText.textContent = activeCap.text;
+            }
+            captionText.classList.add("visible");
+          } else {
+            captionText.classList.remove("visible");
+          }
+        }
+      }
+
+      function showControlsTemporarily() {
+        if (!state.started) return;
+        controlsWrapper.classList.remove("idle-hidden");
+        clearTimeout(state.idleTimer);
+        if (state.playing && !state.dragging) {
+          state.idleTimer = setTimeout(() => {
+            if (state.playing && !state.dragging) {
+              controlsWrapper.classList.add("idle-hidden");
+            }
+          }, 2400);
+        }
+      }
+
+      function startFilm(fromZero = false) {
+        audio.init();
+        if (fromZero) {
+          state.time = 0;
+          audio.resetCuesForTime(0);
+        }
+        state.started = true;
+        state.ended = false;
+        state.playing = true;
+        state.lastTimestamp = performance.now();
+        titleOverlay.classList.add("hidden");
+        endOverlay.classList.add("hidden");
+        updateUI();
+        showControlsTemporarily();
+      }
+
+      function togglePlayPause() {
+        if (!state.started || state.ended) {
+          startFilm(true);
+          return;
+        }
+        audio.init();
+        state.playing = !state.playing;
+        state.lastTimestamp = performance.now();
+        if (!state.playing) {
+          audio.silenceContinuous();
+          controlsWrapper.classList.remove("idle-hidden");
+          clearTimeout(state.idleTimer);
+        } else {
+          showControlsTemporarily();
+        }
+        updateUI();
+      }
+
+      function seekTo(newTime) {
+        state.time = clamp(newTime, 0, FILM_DURATION);
+        state.ended = state.time >= FILM_DURATION;
+        if (state.ended) {
+          state.playing = false;
+          audio.silenceContinuous();
+          endOverlay.classList.remove("hidden");
+        } else {
+          endOverlay.classList.add("hidden");
+        }
+        audio.resetCuesForTime(state.time);
+        renderFilmFrame(state.time);
+        updateUI();
+      }
+
+      function toggleCaptions() {
+        state.captionsOn = !state.captionsOn;
+        btnCaptions.classList.toggle("active", state.captionsOn);
+        updateUI();
+      }
+
+      function toggleMute() {
+        state.muted = !state.muted;
+        audio.setMuted(state.muted);
+        iconVolOn.style.display = state.muted ? "none" : "block";
+        iconVolOff.style.display = state.muted ? "block" : "none";
+      }
+
+      // 60fps Main Animation Loop
+      function tick(now) {
+        if (state.playing && !state.dragging) {
+          const dt = Math.min(0.1, (now - state.lastTimestamp) / 1000);
+          state.lastTimestamp = now;
+          state.time += dt;
+
+          if (state.time >= FILM_DURATION) {
+            state.time = FILM_DURATION;
+            state.playing = false;
+            state.ended = true;
+            audio.silenceContinuous();
+            endOverlay.classList.remove("hidden");
+            controlsWrapper.classList.remove("idle-hidden");
+          }
+
+          audio.update(state.time, state.playing);
+          renderFilmFrame(state.time);
+          updateUI();
+        } else if (!state.started) {
+          // Living ambient frame behind the opening title screen
+          renderFilmFrame(0.65);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      /* ========================================================================
+         8. EVENT LISTENERS (CLICK, TOUCH, SCRUBBER & KEYBOARD SHORTCUTS)
+         ======================================================================== */
+      btnPlayStart.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startFilm(true);
+      });
+
+      btnWatchAgain.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startFilm(true);
+      });
+
+      btnPlayPause.addEventListener("click", (e) => {
+        e.stopPropagation();
+        togglePlayPause();
+      });
+
+      btnRestart.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startFilm(true);
+      });
+
+      btnCaptions.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleCaptions();
+      });
+
+      btnMute.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleMute();
+      });
+
+      // Clicking canvas toggles Play/Pause once started
+      canvas.addEventListener("click", () => {
+        if (state.started && !state.ended) {
+          togglePlayPause();
+        }
+      });
+
+      // Auto-reveal control bar on mouse or touch activity
+      theater.addEventListener("mousemove", showControlsTemporarily);
+      theater.addEventListener("touchstart", showControlsTemporarily, { passive: true });
+
+      // Draggable Timeline Scrubber (Mouse + Touch via Pointer Events)
+      function getScrubTimeFromEvent(e) {
+        const rect = scrubberTrack.getBoundingClientRect();
+        const frac = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+        return { frac, time: frac * FILM_DURATION };
+      }
+
+      scrubberArea.addEventListener("pointerdown", (e) => {
+        if (!state.started) startFilm(false);
+        state.dragging = true;
+        scrubberArea.classList.add("dragging");
+        try { scrubberArea.setPointerCapture(e.pointerId); } catch (_) {}
+        const { time } = getScrubTimeFromEvent(e);
+        seekTo(time);
+      });
+
+      scrubberArea.addEventListener("pointermove", (e) => {
+        const { frac, time } = getScrubTimeFromEvent(e);
+        const sc = getSceneForTime(time);
+        scrubberTooltip.textContent = `${formatTime(time)} — ${sc.label}`;
+        scrubberTooltip.style.left = `${clamp(frac * 100, 10, 90)}%`;
+        scrubberTooltip.classList.add("show");
+        if (state.dragging) {
+          seekTo(time);
+        }
+      });
+
+      scrubberArea.addEventListener("pointerup", (e) => {
+        if (!state.dragging) return;
+        state.dragging = false;
+        scrubberArea.classList.remove("dragging");
+        try { scrubberArea.releasePointerCapture(e.pointerId); } catch (_) {}
+        state.lastTimestamp = performance.now();
+        showControlsTemporarily();
+      });
+
+      scrubberArea.addEventListener("pointerleave", () => {
+        if (!state.dragging) scrubberTooltip.classList.remove("show");
+      });
+
+      // Keyboard Shortcuts: Space, C, M, R, ArrowLeft, ArrowRight
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          togglePlayPause();
+        } else if (e.key === "c" || e.key === "C") {
+          toggleCaptions();
+        } else if (e.key === "m" || e.key === "M") {
+          toggleMute();
+        } else if (e.key === "r" || e.key === "R") {
+          startFilm(true);
+        } else if (e.code === "ArrowRight" && state.started) {
+          seekTo(state.time + 2.5);
+        } else if (e.code === "ArrowLeft" && state.started) {
+          seekTo(state.time - 2.5);
+        }
+      });
+
+      window.addEventListener("resize", resizeCanvas);
+
+      // Start rendering once page layout is loaded
+      window.addEventListener("load", () => {
+        resizeCanvas();
+        updateUI();
+        requestAnimationFrame(tick);
+      });
+    })();
+  </script>
+</body>
+</html>
